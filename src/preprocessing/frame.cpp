@@ -2,7 +2,7 @@
 // Description: 
 
 // TODO: split into files
-// TOOD: add documentantion and comments
+// TODO: add documentantion and comments
 // TODO: clean up
 
 #include <iostream>
@@ -22,6 +22,12 @@ using byte = std::uint8_t;
 using bytesVec = std::vector<byte>;
 using symbol10 = std::uint16_t;
 
+
+/**
+ * @brief Creates bytesVec with 6 random bytes, immulating MAC address
+ * 
+ * @return bytesVec 
+ */
 bytesVec randomMAC() {
     bytesVec mac;
     mac.reserve(6);
@@ -31,6 +37,14 @@ bytesVec randomMAC() {
     return mac;
 }
 
+/**
+ * @brief Parses frame from string to bytesVec
+ * @details Frame is in the format of Wireshark capture, ie.
+ *          chain of bytes written in hexadecimal, separated by '|'
+ * 
+ * @param line      - string representation a Ethernet frame
+ * @return bytesVec - vector of bytes
+ */
 bytesVec parseFrame(std::string line) {
     bytesVec bytes;
     std::string token;
@@ -45,6 +59,16 @@ bytesVec parseFrame(std::string line) {
     return bytes;
 }
 
+/**
+ * @brief Parses frames from file to vector of bytesVec
+ * @details Opens the Wireshark capture file pointed to by filename and reads frames from it
+ *          The file contains Ethernet frames written in the following format: |0   |32|4a|1c|09|f2|55|7d|9a|...
+ *          As additional informations are added by Wireshark (timestamp etc.), the function filters only lines starting with '|0'
+ *          To make parsing easier the beginning "|0   " is removed from each line containing a frame
+ * 
+ * @param filename                  - name of the file containing frames
+ * @return std::vector<bytesVec>    - vector of frames, each frame is a vector of bytes
+ */
 std::vector<bytesVec> readFrames(std::string filename) {
     std::vector<bytesVec> frames;
     std::ifstream file(filename);
@@ -52,9 +76,8 @@ std::vector<bytesVec> readFrames(std::string filename) {
     if (file.is_open()) {
         std::string line;
         while (getline(file, line)) {
-            // filter only lines containing frames 
-            if (line[0] == '|' && line[1] == '0') {
-                line.erase(0, 6);                       // remove front padding from wireshark
+            if (line[0] == '|' && line[1] == '0') {     // filter only lines containing frames (start with '|0')
+                line.erase(0, 6);                       // remove front padding added by Wireshark
                 frames.push_back(parseFrame(line));     
             }
         }
@@ -65,6 +88,11 @@ std::vector<bytesVec> readFrames(std::string filename) {
     return frames;
 }
 
+/**
+ * @brief Prints bytesVec with std::cout as series of bytes in hex, separated by ' ' and followed by '::' and size in bytes
+ * 
+ * @param bytes - vector of bytes to be printed
+ */
 void printBytesVec(const bytesVec& bytes) {
     for (int i = 0; i < bytes.size(); i++) {
         std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)bytes[i] << " ";
@@ -73,6 +101,12 @@ void printBytesVec(const bytesVec& bytes) {
 
 }
 
+/**
+ * @brief Write bytesVec as vector bytes to binary file
+ * 
+ * @param bytes     - vector of bytes to be written
+ * @param filename  - name of the file to write to
+ */
 void writeBytesVec(const bytesVec& bytes, std::string filename) {
     std::ofstream file;
     file.open(filename, std::ios::binary);
@@ -80,6 +114,14 @@ void writeBytesVec(const bytesVec& bytes, std::string filename) {
     file.close();
 }
 
+/**
+ * @brief Padds the bytesVec with given (or default = 0) padding to the given size
+ * 
+ * @param bytes     - vector of bytes to be padded, not modified
+ * @param size      - size to which the vector should be padded
+ * @param padding   - byte to be used as padding, default is 0
+ * @return bytesVec - padded vector of bytes
+ */
 bytesVec rightPadBytesVec(const bytesVec& bytes, int size, byte padding = 0) {
     bytesVec padded = bytes;
     padded.resize(size, padding);
@@ -90,6 +132,15 @@ namespace crc32 {
     // implementation by https://gist.github.com/timepp/1f678e200d9e0f2a043a9ec6b3690635
     // modified to use bytesVec
     // code of generate_table() unchanged
+
+    /**
+     * @brief Generates CRC32 reference table, credit to https://github.com/timepp
+     * @details Generates a reference table of 256 CRC32 values, used for CRC32 calculation
+     *          Implementation by https://gist.github.com/timepp/1f678e200d9e0f2a043a9ec6b3690635
+     *          Not modified
+     * 
+     * @param table - pointer to the table to be filed with CRC32 values
+     */
 	void generate_table(uint32_t *table)
 	{
 		uint32_t polynomial = 0xEDB88320;
@@ -109,6 +160,13 @@ namespace crc32 {
 		}
 	}
 
+    /**
+     * @brief Calculates CRC32 of the given bytesVec, using pregenerated CRC32 reference table
+     * 
+     * @param table     - pointer to the pregenerated CRC32 reference table (genreted by generate_table())
+     * @param data      - vector of bytes to calculate CRC32 of
+     * @return uint32_t - CRC32 value of the data, as uint32_t 
+     */
 	uint32_t crc(uint32_t* table, const bytesVec& data)
 	{
 		uint32_t crc = 0xFFFFFFFF;
@@ -118,6 +176,12 @@ namespace crc32 {
 		return crc ^ 0xFFFFFFFF;
 	}
 
+    /**
+     * @brief Converts CRC32 value from uint32_t to bytesVec of 4 bytes
+     * 
+     * @param crc       - CRC32 value to be converted
+     * @return bytesVec - vector of 4 bytes equal to the CRC32 value of crc 
+     */
     bytesVec toBytesVec(uint32_t crc) {
         bytesVec bytes;
         bytes.reserve(4);
@@ -129,9 +193,29 @@ namespace crc32 {
 };
 
 namespace encodings {
+    /**
+     * @brief Bit mask to extract the younger 5 bits from byte
+     * 
+     */
     const std::uint8_t EDCBA = 0b00011111;
-    const std::uint8_t HGF = 0b11100000;
+    /**
+     * @brief Bit mask to extract the older 3 bits from byte
+     * 
+     */
+    const std::uint8_t HGF   = 0b11100000;
 
+    /**
+     * @brief 5b/6b encoding of a single symbol
+     * @details Encodes 5 bits to 6 bits, using the 5b/6b encoding table, with th respect of running disparity (used in 8b/10b encoding)
+     *          The table, defined in encodingtables.h, is a map of pairs of 6bit symbols, former for RD=-1 and latter for RD=1
+     *          As it's not really feasible to pass around packets of 5 or 6 bits, the function takes 8bit input and returns 8bit output
+     *          the "additional" bits are filled with '0's 
+     *          Throws std::invalid_argument if RD is neither -1 nor 1
+     * 
+     * @param input         - symbol to encode - uint8_t used to transport 5 bit symbol of 5b/6b encoding, with the "additional" bits are set to 0
+     * @param RD            - running disparity, -1 or 1
+     * @return std::uint8_t - encoded symbol - uint8_t used to transport 6 bit symbol of 5b/6b encoding, with the "additional" bits are set to 0
+     */
     std::uint8_t encodeByte5b6b(std::uint8_t input, int RD) {
         if (RD == -1)
             return CODE_5b6b.at(input).first;
@@ -141,6 +225,18 @@ namespace encodings {
             throw std::invalid_argument("RD must be -1 or 1");
     }
 
+    /**
+     * @brief 3b/4b encoding of a single symbol
+     * @details Encodes 3 bits to 4 bits, using the 3b/4b encoding table, with th respect of running disparity (used in 8b/10b encoding)
+     *          The table, defined in encodingtables.h, is a map of pairs of 4bit symbols, former for RD=-1 and latter for RD=1
+     *          As it's not really feasible to pass around packets of 3 or 4 bits, the function takes 8bit input and returns 8bit output
+     *          the "additional" bits are filled with '0's 
+     *          Throws std::invalid_argument if RD is neither -1 nor 1
+     * 
+     * @param input         - symbol to encode - uint8_t used to transport 3 bit symbol of 3b/4b encoding, with the "additional" bits are set to 0
+     * @param RD            - running disparity, -1 or 1
+     * @return std::uint8_t - encoded symbol - uint8_t used to transport 4 bit symbol of 3b/4b encoding, with the "additional" bits are set to 0
+     */
     std::uint8_t encodeByte3b4b(std::uint8_t input, int RD) {
         if (RD == -1)
             return CODE_3b4b.at(input).first;
@@ -150,7 +246,13 @@ namespace encodings {
             throw std::invalid_argument("RD must be -1 or 1");
     }
 
-    // inefficient, but for portability reasons - to not rely on compiler's built-in functions
+    /**
+     * @brief Counts high bits ('1') in the given 10bit symbol
+     * @details While such implementation is obviously inefficient, it is used to avoid relying on compiler's built-in functions
+     * 
+     * @param input - 10bit symbol to count high bits in
+     * @return int  - number of high bits in the symbol
+     */
     int count_ones(symbol10 input) {
         int count = 0;
         for (int i = 0; i < 8; i++) {
@@ -159,12 +261,26 @@ namespace encodings {
         return count;
     }
 
+    /**
+     * @brief 8b/10b encoding of a single symbol
+     * @details Encodes 8 bits to 10 bits, using 5b/6b and 3b/4b encodings
+     *          See https://en.wikipedia.org/wiki/8b/10b_encoding for more detailed explanation of the algorithm
+     *          Uses encodeByte5b6b() to encode the younger 5 bits of the input symbol into the older 6 bits of the output symbol
+     *          and encodeByte3b4b() to encode the older 3 bits of the input symbol into the younger 4 bits of the output symbol
+     *          In order to avoid long series of 0 or 1 the 8b/10b encoding tracks the "running disparity" (RD) 
+     *          RD is the difference between the number of '1' and '0' bits in the previous encoded symbol
+     *          and is used to choose the correct 5b/6b and 3b/4b encoding of the next symbol
+     * 
+     * @param input     - symbol to encode - uint8_t used to transport 8 bit symbol of 8b/10b encoding, with the "additional" bits are set to 0
+     * @param RD        - running disparity, -1 or 1
+     * @return symbol10 - uint16_t used to transport 10 bit symbol of 8b/10b encoding, with the "additional" bits are set to 0
+     */
     symbol10 encodeByte8b10b(std::uint8_t input, int RD) {
         std::uint8_t x = input & EDCBA;
         std::uint8_t y = input >> 5;
         std::uint8_t abcdei = encodeByte5b6b(x, RD);
         if (y == 7) {                                               // check for special case of D.x.P7/D.x.A7
-            if ((RD == -1 && (x == 17 || x == 18 || x == 20)) ||
+            if ((RD == -1 && (x == 17 || x == 18 || x == 20)) ||    // see https://en.wikipedia.org/wiki/8b/10b_encoding for explanation
                 (RD ==  1 && (x == 11 || x == 13 || x == 24))) {
                     y = 8;
                 }
@@ -174,6 +290,7 @@ namespace encodings {
         output = (abcdei << 4) | fghj;
         return output;
     }
+
 
     bytesVec encodeBytesVec8b10b(const bytesVec& data) {
         int RD = -1;
@@ -237,6 +354,18 @@ namespace encodings {
         return encoded;
     }
 
+    /**
+     * @brief Decodes 10bit symbol to 8bit symbol
+     * @details Decodes 10bit symbol to 8bit symbol, using 5b/6b and 3b/4b decodings
+     *          See https://en.wikipedia.org/wiki/8b/10b_encoding for more detailed explanation of the algorithm
+     *          Uses DECODE_5b6b and DECODE_3b4b tables to decode the 10bit symbol
+     *          The function first extracts the younger 6 bits of the 10bit symbol and decodes them using DECODE_5b6b table
+     *          Then it extracts the older 4 bits of the 10bit symbol and decodes them using DECODE_3b4b table
+     *          The decoded 6 and 4 bits are then combined into 8bit symbol
+     * 
+     * @param symbol        - 10bit symbol to decode
+     * @return std::uint8_t - 8bit decoded symbol
+     */
     std::uint8_t decodeSymbol10b8b(symbol10 symbol) {
         std::uint8_t abcdei = symbol >> 4;
         std::uint8_t fghj = symbol & 0b1111;
@@ -244,12 +373,10 @@ namespace encodings {
         try {
             x = DECODE_5b6b.at(abcdei);
         } catch (std::out_of_range& e) {
-            //std::cout << "x not found:" << std::hex << std::setw(2) << std::setfill('0') << (int)abcdei << ":";
         }
         try {
             y = DECODE_3b4b.at(fghj);
         } catch (std::out_of_range& e) {
-            //std::cout << "y not found:" << std::hex << std::setw(2) << std::setfill('0') << (int)fghj << ":";
         }
 
         return (y << 5) | x;
