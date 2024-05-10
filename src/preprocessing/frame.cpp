@@ -2,7 +2,6 @@
 // Description: 
 
 // TODO: split into files
-// TODO: add documentantion and comments
 // TODO: clean up
 
 #include <iostream>
@@ -291,14 +290,33 @@ namespace encodings {
         return output;
     }
 
-
+    /**
+     * @brief Encodes vector of bytes to 8b/10b encoded vector of bytes, the given vector MUST have length divisible by 4
+     * @details Encodes gicen vector of bytes (bytesVec) with the 8b/10b encoding
+     *          see https://en.wikipedia.org/wiki/8b/10b_encoding for more detailed explanation
+     *          see encodeByte8b10b() for how single symbol is encoded
+     *          The 10 bit encoded symbols are buffered until 40 bits (4 symbols) are stored
+     *          so that 5 bytes can be written to output vector at once
+     *          (the bytes have to be written in reverse order, as the 10bit symbols are stored in reverse order in the buffer)
+     *          due to this the vector being encoded must have length divisible by 4 
+     *          throws std::invalid_argument otherwise.
+     *          The function also tracks the "running disparity" (RD) of the encoded symbols
+     *          and updates it accordingly
+     * 
+     * @param data      - vector of bytes to encode, must have length divisible by 4, not modified
+     * @return bytesVec - 8b/10b encoded vector of bytes
+     */
     bytesVec encodeBytesVec8b10b(const bytesVec& data) {
+        if (data.size() % 4 != 0) {
+            throw std::invalid_argument("Data size must be divisible by 4");
+        }
+
         int RD = -1;
-        bytesVec encoded;           // encoded data, in a vector of bytes (bytesVec)
-        std::uint64_t buffer = 0;   // buffer used to hold 4 10bit symbols before they are saved to encoded bytesVec (as 5 bytes)
-        int bitsInBuffer = 0;       // state of the buffer
-        symbol10 symbol;   
-        uint8_t buff[5] ;        
+        bytesVec encoded;               // encoded data, in a vector of bytes (bytesVec)
+        std::uint64_t buffer = 0;       // buffer used to hold 4 10bit symbols before they are saved to encoded bytesVec (as 5 bytes)
+        int bitsInBuffer = 0;           // state of the buffer
+        symbol10 symbol;                // 10bit symbol to encode
+        std::uint8_t invertBuffer[5] ;  // buffer used to invert the order of bytes in the output vector       
 
         for (int i = 0; i < data.size(); i++) {
             // encode new symbol and update buffer
@@ -307,48 +325,31 @@ namespace encodings {
             bitsInBuffer += 10;
 
             // check for running disparity and update RD if needed
-            // '1' in symbol10 (uint16_t really) is counted by count_ones()
-            // '0' in uint16_t would be 16 - count_ones(),
+            // '1's in symbol10 (uint16_t really) is counted by count_ones()
+            // '0's in uint16_t would be 16 - count_ones(),
             // but we are looking for the difference in a 10bit symbol, so 
-            // '0' in symbol10 is 16 - count_ones() - 6 (6 '0' of front-padding)
-            // diff = '1' - '0' = count_ones() - (16 - count_ones() - 6) = 2*count_ones() - 6
-            int diff = 2 * count_ones(symbol) - 6;
+            // '0's in symbol10 is 16 - count_ones() - 6 (6 '0's of front-padding)
+            // so the difference is '1's - '0's = count_ones() - (16 - count_ones() - 6) = 2*count_ones() - 10
+            int diff = 2 * count_ones(symbol) - 10;
             if (diff < 0)
                 RD = -1;
             else if (diff > 0)
                 RD = 1;
 
             // if there are 40 bits (4 symbols 10bit each or 5 bytes) in the buffer, save them to encoded bytesVec
+            // the invertBuffer array is used to invert the order of bytes coming into the final buffer
             if (bitsInBuffer == 40) {
-                // encoded.push_back(buffer & 0xFF);
-                // encoded.push_back((buffer >> 8) & 0xFF);
-                // encoded.push_back((buffer >> 16) & 0xFF);
-                // encoded.push_back((buffer >> 24) & 0xFF);
-                // encoded.push_back((buffer >> 32) & 0xFF);
                 for (int j = 0; j < 5; j++) {
-                    buff[j] = buffer & 0xFF;
+                    invertBuffer[j] = buffer & 0xFF;
                     buffer = buffer >> 8;
                     bitsInBuffer -= 8;
                 }
-                encoded.push_back(buff[4]);
-                encoded.push_back(buff[3]);
-                encoded.push_back(buff[2]);
-                encoded.push_back(buff[1]);
-                encoded.push_back(buff[0]);
+                for (int j = 4; j >= 0; j--) {
+                    encoded.push_back(invertBuffer[j]);
+                }
                 bitsInBuffer = 0;
                 buffer = 0;
             }
-        }
-
-        // if there are less than 40 bits in the buffer, save them to encoded bytesVec
-        // but first, pad buffer with '0' to make it 40 bits long
-        if (bitsInBuffer > 0) {
-            buffer = buffer << (40 - bitsInBuffer);
-            encoded.push_back(buffer & 0xFF);
-            encoded.push_back((buffer >> 8) & 0xFF);
-            encoded.push_back((buffer >> 16) & 0xFF);
-            encoded.push_back((buffer >> 24) & 0xFF);
-            encoded.push_back((buffer >> 32) & 0xFF);
         }
 
         return encoded;
@@ -382,47 +383,50 @@ namespace encodings {
         return (y << 5) | x;
     }
 
+    /**
+     * @brief Decode vector of bytes from 8b/10b encoded vector of bytes, the given vector MUST have length divisible by 4
+     * @details Decodes given vector of bytes (bytesVec) with the 8b/10b encoding
+     *          see decodeSymbol10b8b() for how single symbol is decoded
+     *          The 10 bit encoded symbols are buffered until 40 bits (4 symbols) are stored
+     *          so that 5 bytes can be written to output vector at once
+     *          (the bytes have to be written in reverse order, as the 10bit symbols are stored in reverse order in the buffer)
+     *          due to this the vector being decoded must have length divisible by 4
+     *          throws std::invalid_argument otherwise.
+     *          During decoding 8b/10b encoding there is no need to track the "running disparity" (RD) of the encoded symbols
+     * 
+     * @param data      - vector of bytes encided in 8b/10b to decode, must have length divisible by 4, not modified
+     * @return bytesVec - decoded vector of bytes
+     */
     bytesVec decodeByteVec10b8b(const bytesVec& data) {
+        if (data.size() % 4 != 0) {
+            throw std::invalid_argument("Data size must be divisible by 4");
+        }
+
         int RD = -1;
-        bytesVec decoded;
-        std::uint64_t buffer = 0;
-        int bitsInBuffer = 0;
-        symbol10 symbol;
+        bytesVec decoded;               // decoded data, in a vector of bytes (bytesVec)
+        std::uint64_t buffer = 0;       // buffer used to hold 4 10bit symbols before they are saved to decoded bytesVec (as 5 bytes)
+        int bitsInBuffer = 0;           // state of the buffer
+        symbol10 symbol;                // 10bit symbol to decode
+        std::uint8_t invertBuffer[4];   // buffer used to invert the order of bytes in the output vector
 
         for (int i = 0; i < data.size(); i++) {
             // push bytes into buffer
             buffer = (buffer << 8) | data[i];
             bitsInBuffer += 8;
-            uint8_t buff[4];
-
+            
             // after there are 40 bits (5 bytes, 4 symbols 10bit each) in the buffer
             // decode each symbol and save decoded bytes to decoded bytesVec
             if (bitsInBuffer == 40) {
-                //std::cout << "buffer: " << std::hex << std::setw(16) << std::setfill('0') << buffer << std::endl;
                 for (int j = 0; j < 4; j++) {
                     symbol = 0;
                     symbol = buffer & 0b0000001111111111;
-                    // std::cout << "symbol: " << std::hex << std::setw(4) << std::setfill('0') << symbol << ":\n";
                     buffer = buffer >> 10;
                     bitsInBuffer -= 10;
-                    //decoded.push_back(decodeSymbol10b8b(symbol));
-                    buff[j] = decodeSymbol10b8b(symbol);
+                    invertBuffer[j] = decodeSymbol10b8b(symbol);
                 }
-                decoded.push_back(buff[3]);
-                decoded.push_back(buff[2]);
-                decoded.push_back(buff[1]);
-                decoded.push_back(buff[0]);
-            }
-        }
-
-        // if the buffer is not empty, pad it with '0' and decode the remaining symbols
-        if (bitsInBuffer > 0) {
-            buffer = buffer << (40 - bitsInBuffer);
-            for (int j = 0; j < 4; j++) {
-                symbol = buffer & 0x0000001111111111;
-                buffer = buffer >> 10;
-                bitsInBuffer -= 10;
-                decoded.push_back(decodeSymbol10b8b(symbol));
+                for (int j = 3; j >= 0; j--) {
+                    decoded.push_back(invertBuffer[j]);
+                }
             }
         }
 
@@ -433,15 +437,14 @@ namespace encodings {
 namespace errors {
 
     /**
-    * @brief negates bits at given positions in given vector of bytes
+    * @brief Negates bits at given positions in given vector of bytes
+    * @details If the positions would be {0, 12, 17} then bits negated would be: 
+    *          0th bit of 0th byte, 4th bit of 1st byte, 1st bit of 3rd byte and so on.
+    *          Positions out of range are ignored.    
     * 
-    * @param data vector of original bytes, not modified
-    * @param positions vector of positions to negate bits at, should be no longer than 8*data.size() (nr of bits in data)
-    * @return vector of bytes with bits negated at given positions
-    * 
-    * @details if the positions be [0, 12, 17] then bits negated would be: 0th bit of 0th byte,
-    *          4th bit of 1st byte, 1st bit of 3rd byte and so on
-    *          positions out of range are ignored
+    * @param data      - vector of original bytes, not modified
+    * @param positions - vector of positions to negate bits at, should be no longer than 8*data.size() (nr of bits in data)
+    * @return          - vector of bytes with bits negated at given positions
     */
     bytesVec flipBits(const bytesVec&data, const std::unordered_set<int>& positions) {
         bytesVec flipped = data;
@@ -455,53 +458,100 @@ namespace errors {
         return flipped;
     }
 
-    // returns random position of single bit within the 'destination MAC' field of a 8b/10b encoded Ethernet II frame
-    // the 'destination MAC' field is the first 6 bytes of the frame
+    /**
+     * @brief Get the position of random bit in destination MAC field of 8b/10b encoded Ethernet II frame
+     * @details Returns random position of single bit within the 'destination MAC' field of a 8b/10b encoded Ethernet II frame
+     *          the 'destination MAC' field is the first 6 bytes of the frame,
+     *          which after encoding are the first 60 bits of the encoded frame (bytes 0 - 7 and the older half of byte 8)      
+     * 
+     * @param gen  - mt19937 random number generator
+     * @return int - position of the bit
+     */
     int getPositionsInFirstEncodedMAC(std::mt19937& gen) {
         std::uniform_int_distribution<int> dist(0, 59);
         return dist(gen);
     }
 
-    // returns random position of single bit within the 'source MAC' field of a 8b/10b encoded Ethernet II frame
-    // the 'source MAC' field is the next 6 bytes of the frame (bytes 7 to 12)
+    /**
+     * @brief Get the position of random bit in source MAC field of 8b/10b encoded Ethernet II frame
+     * @details Returns random position of single bit within the 'source MAC' field of a 8b/10b encoded Ethernet II frame
+     *          the 'source MAC' field are the bytes 7 - 12 of the frame,
+     *          which after encoding are the bits 61 - 119 (indexing from 0) of the encoded frame (younger half of byte 8 and bytes 9 - 14)      
+     * 
+     * @param gen  - mt19937 random number generator
+     * @return int - position of the bit
+     */
     int getPositionsInSecondEncodedMAC(std::mt19937& gen) {
         std::uniform_int_distribution<int> dist(60, 119);
         return dist(gen);
     }
 
-    // returns random position of single bit within the 'EtherType' field of a 8b/10b encoded Ethernet II frame
-    // the 'EtherType' field is the next 2 bytes of the frame (bytes 13 to 14)
+    /**
+     * @brief Get the position of random bit in EtherType field of 8b/10b encoded Ethernet II frame
+     * @details Returns random position of single bit within the 'EtherType' field of a 8b/10b encoded Ethernet II frame
+     *          the 'EtherTypes' field are the bytes 13 - 14 of the frame,
+     *          which after encoding are the bits 120 - 139 (indexing from 0) of the encoded frame (bytes 15 - 16 and the older half of byte 17)      
+     * 
+     * @param gen  - mt19937 random number generator
+     * @return int - position of the bit
+     */
     int getPositionsInEncodedEtherType(std::mt19937& gen) {
         std::uniform_int_distribution<int> dist(120, 139);
         return dist(gen);
     }
 
-    // returns random position of single bit within the 'CRC' field of a 8b/10b encoded Ethernet II frame
-    // the CRC field is the last 4 bytes of the frame (bytes size-4 to size-1)
-    // as such the length of the frame before encoding (which might introduce padding) should be passed as an argument
+    /**
+     * @brief Get the position of random bit in CRC field of 8b/10b encoded Ethernet II frame
+     * @details Returns random position of single bit within the 'CRC' field of a 8b/10b encoded Ethernet II frame
+     *          the 'CRC' field are the last 4 bytes (bytes size-4 - size-1) of the frame,
+     *          which after encoding are the last 40 bits of the encoded frame 
+     *          as such the length of the frame before encoding (which might introduce padding) should be passed as an argument
+     * 
+     * @param gen            - mt19937 random number generator
+     * @param plainframeSize - length of the in bytes frame before encoding (which might introduce padding)
+     * @return int           - position of the bit
+     */
     int getPositionsInEncodedCRC(std::mt19937& gen, int plainframeSize) {
         std::uniform_int_distribution<int> dist(plainframeSize * 8 - 40, plainframeSize * 8 - 1);
         return dist(gen);
     }
 
-    // returns random position of single bit within the 'Data' field of a 8b/10b encoded Ethernet II frame
-    // the Data field is the part of the frame between the 'EtherType' and 'CRC' fields (bytes 15 to size-4)
-    // as such the length of the frame before encoding (which might introduce padding) should be passed as an argument
+    /**
+     * @brief Get the position of random bit in Data field of 8b/10b encoded Ethernet II frame
+     * @details Returns random position of single bit within the 'Data' field of a 8b/10b encoded Ethernet II frame
+     *          the 'Data' field are the bytes 15 - size-5 of the frame (all bytes between the header and the last 4 bytes of CRC)
+     *          which after encoding are the bits 140 - size*8 - 40 (indexing from 0) of the encoded frame 
+     *          as such the length of the frame before encoding (which might introduce padding) should be passed as an argument
+     * 
+     * @param gen            - mt19937 random number generator
+     * @param plainframeSize - length of the frame in bytes before encoding (which might introduce padding)
+     * @return int           - position of the bit
+     */
     int getPositionsInEncodedFrameData(std::mt19937& gen, int plainframeSize) {
         std::uniform_int_distribution<int> dist(140, plainframeSize * 8 - 40 - 1);
         return dist(gen);
     }
 
-    // returns random positions of single bits within the given fields of a 8b/10b encoded Ethernet II frame
-    // takes a map of fields and number of errors to introduce in each field
-    // the fields are: "DestMAC", "SourceMAC", "EtherType", "CRC", "Data"
-    // the number of errors should be less than 8*fieldSize
-    // the length of the frame before encoding (which might introduce padding) should be passed as an argument
-    // the function returns std::unordered_set of unique positions of bits to be flipped (to be used in flipBits() function or inspected)
+    /**
+     * @brief Get the positions of random  bits within the fields of a 8b/10b encoded Ethernet II frame according to given map
+     * @details Returns random positions of single bits within the given fields of a 8b/10b encoded Ethernet II frame   
+     *          The map details how many errors should be introduced in each field
+     *          The format would be: {{"DestMAC", (0-60)}, {"SourceMAC", (0-60)}, {"EtherType", (0-20)}, {"CRC", (0-*)}, {"Data", (0-40)}}
+     *          possible ranges for each field given in the brackets
+     *          (* - length of the frame in bytes before encoding * 10 - 140 (Ethernet II header) - 40 (CRC) ).
+     *          Fields not present in the map are ignored
+     *          The function returns std::unordered_set of unique positions of bits to be flipped (to be used in flipBits() function or inspected)
+     * 
+     * 
+     * @param targets                  - map of fields and number of errors to introduce in each field
+     * @param gen                      - mt19937 random number generator
+     * @param plainframeSize           - length of the frame before encoding (which might introduce padding)
+     * @return std::unordered_set<int> - set of positions of bits to be flipped
+     */
     std::unordered_set<int> getPositionsInEncodedFrame(const std::unordered_map<std::string, int>& targets, std::mt19937& gen, int plainframeSize) {
         std::unordered_set<int> positions;
-        std::uniform_int_distribution<int> dist(0, 7);
         std::string field = "";
+
         for (auto it = targets.begin(); it != targets.end(); it++) {
             field = it->first;
             int count = it->second;
@@ -519,12 +569,12 @@ namespace errors {
                 } else if (field == "Data") {
                     pos = getPositionsInEncodedFrameData(gen, plainframeSize);
                 } else {
-                    std::cout << "Unknown field: " << field << std::endl;
+                    // std::cout << "Unknown field: " << field << std::endl;
                     break;
                 }
 
-                auto [it, inserted] = positions.insert(pos);
-                if (inserted) {
+                auto inserted = positions.insert(pos);
+                if (inserted.second) {
                     uniqueErrors++;
                 }
             }
