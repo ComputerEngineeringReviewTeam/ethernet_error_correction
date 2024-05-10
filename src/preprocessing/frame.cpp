@@ -384,13 +384,13 @@ namespace encodings {
     }
 
     /**
-     * @brief Decode vector of bytes from 8b/10b encoded vector of bytes, the given vector MUST have length divisible by 4
+     * @brief Decode vector of bytes from 8b/10b encoded vector of bytes, the given vector MUST have length divisible by 5
      * @details Decodes given vector of bytes (bytesVec) with the 8b/10b encoding
      *          see decodeSymbol10b8b() for how single symbol is decoded
      *          The 10 bit encoded symbols are buffered until 40 bits (4 symbols) are stored
      *          so that 5 bytes can be written to output vector at once
      *          (the bytes have to be written in reverse order, as the 10bit symbols are stored in reverse order in the buffer)
-     *          due to this the vector being decoded must have length divisible by 4
+     *          due to this the vector being decoded must have length divisible by 5
      *          throws std::invalid_argument otherwise.
      *          During decoding 8b/10b encoding there is no need to track the "running disparity" (RD) of the encoded symbols
      * 
@@ -398,13 +398,13 @@ namespace encodings {
      * @return bytesVec - decoded vector of bytes
      */
     bytesVec decodeByteVec10b8b(const bytesVec& data) {
-        if (data.size() % 4 != 0) {
+        if (data.size() % 5 != 0) {
             throw std::invalid_argument("Data size must be divisible by 4");
         }
 
         int RD = -1;
         bytesVec decoded;               // decoded data, in a vector of bytes (bytesVec)
-        std::uint64_t buffer = 0;       // buffer used to hold 4 10bit symbols before they are saved to decoded bytesVec (as 5 bytes)
+        std::uint64_t buffer = 0;       // buffer used to hold 5 bytes (4 10 bit symbols) before they are decoded and saved to decoded bytesVec
         int bitsInBuffer = 0;           // state of the buffer
         symbol10 symbol;                // 10bit symbol to decode
         std::uint8_t invertBuffer[4];   // buffer used to invert the order of bytes in the output vector
@@ -584,10 +584,13 @@ namespace errors {
 };
 
 int main() {
-    auto testFrames = readFrames("capture_test.txt");
+    auto testFrames = readFrames("../../data/raw/capture_test.txt");
     bytesVec testFrame = testFrames[2];
     printBytesVec(testFrame);
     std::cout << "\tTEST FRAME" << std::endl;
+    if (testFrame.size() % 4 != 0) {
+        testFrame = rightPadBytesVec(testFrame, testFrame.size() + 4 - testFrame.size() % 4);
+    }
     bytesVec encoded = encodings::encodeBytesVec8b10b(testFrame);
     printBytesVec(encoded);
     std::cout << "\tENCODED FRAME" << std::endl;
@@ -599,6 +602,7 @@ int main() {
     std::cout << "\tTEST FRAME" << std::endl;
 
     std::cout << std::endl << std::endl;
+
     std::mt19937 gen;
     std::unordered_map<std::string, int> targets = {{"DestMAC", 1}, {"SourceMAC", 1}, {"EtherType", 1}, {"CRC", 0}, {"Data", 1}};
     bytesVec flipped = errors::flipBits(encoded, errors::getPositionsInEncodedFrame(targets, gen, testFrame.size()));
