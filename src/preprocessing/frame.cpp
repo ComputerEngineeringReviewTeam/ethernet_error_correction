@@ -14,7 +14,6 @@
 #include <random>
 #include <unordered_set>
 
-#include "encodingtables.h"
 #include "crc32.hpp"
 #include "encoding.hpp"
 #include "transerrors.hpp"

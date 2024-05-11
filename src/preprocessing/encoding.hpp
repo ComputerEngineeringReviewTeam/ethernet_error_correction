@@ -1,5 +1,5 @@
 // Author: Marek Szymański
-// Description: 
+// Description: Encoding and decoding of 8b/10b encoded binary data (as vectors of uint8_t)
 
 #pragma once
 
@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <stdexcept>
 
-#include "encodingtables.h"
+#include "encodingtables.hpp"
 
 using byte = std::uint8_t;
 using bytesVec = std::vector<byte>;
@@ -23,7 +23,7 @@ namespace encodings {
      * @brief Bit mask to extract the older 3 bits from byte
      * 
      */
-    const std::uint8_t HGF   = 0b11100000;
+    const std::uint8_t HGF = 0b11100000;
 
     /**
      * @brief 5b/6b encoding of a single symbol

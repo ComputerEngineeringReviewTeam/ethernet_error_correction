@@ -1,5 +1,5 @@
 // Author: Marek Szymański
-// Description: 
+// Description: CRC32 reference table and calculation from vector of uint8_t
 
 #pragma once
 
@@ -10,10 +10,6 @@ using byte = std::uint8_t;
 using bytesVec = std::vector<byte>;
 
 namespace crc32 {
-    // implementation by https://gist.github.com/timepp/1f678e200d9e0f2a043a9ec6b3690635
-    // modified to use bytesVec
-    // code of generate_table() unchanged
-
     /**
      * @brief Generates CRC32 reference table, credit to https://github.com/timepp
      * @details Generates a reference table of 256 CRC32 values, used for CRC32 calculation

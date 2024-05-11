@@ -1,5 +1,5 @@
 // Author: Marek Szymański
-// Description: 
+// Description: Flipping bits in the fields of a 8b/10b encoded Ethernet II frame
 
 #pragma once
 
@@ -10,7 +10,7 @@
 #include <unordered_set>
 #include <random>
 
-#include "encodingtables.h"
+#include "encodingtables.hpp"
 
 using byte = std::uint8_t;
 using bytesVec = std::vector<byte>;
