@@ -1,0 +1,1 @@
+clang++ std=c++11 -o bin/frame src/preprocessing/frame.cpp src/preprocessing/crc32.cpp src/preprocessing/transerrors.cpp src/preprocessing/encoding.cpp
