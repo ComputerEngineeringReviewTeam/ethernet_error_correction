@@ -1,6 +1,8 @@
 // Author: Marek Szymański
 // Description: Collection of encoding and decoding tables for 5b/6b and 3b/4b encoding schemes.
 
+#pragma once
+
 #include <cstdint>
 #include <unordered_map>
 #include <utility>

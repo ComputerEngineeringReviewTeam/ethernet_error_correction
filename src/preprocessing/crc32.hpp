@@ -1,6 +1,8 @@
 // Author: Marek Szymański
 // Description: 
 
+#pragma once
+
 #include <cstdint>
 #include <vector>
 

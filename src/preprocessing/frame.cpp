@@ -134,7 +134,7 @@ bytesVec rightPadBytesVec(const bytesVec& bytes, int size, byte padding = 0) {
 
 
 int main() {
-    auto testFrames = readFrames("../../data/raw/capture_test.txt");
+    auto testFrames = readFrames("../data/raw/capture_test.txt");
     bytesVec testFrame = testFrames[2];
     printBytesVec(testFrame);
     std::cout << "\tTEST FRAME" << std::endl;
