@@ -33,9 +33,9 @@ namespace encodings {
      *          the "additional" bits are filled with '0's 
      *          Throws std::invalid_argument if RD is neither -1 nor 1
      * 
-     * @param input         - symbol to encode - uint8_t used to transport 5 bit symbol of 5b/6b encoding, with the "additional" bits are set to 0
-     * @param RD            - running disparity, -1 or 1
-     * @return std::uint8_t - encoded symbol - uint8_t used to transport 6 bit symbol of 5b/6b encoding, with the "additional" bits are set to 0
+     * @param input         symbol to encode - uint8_t used to transport 5 bit symbol of 5b/6b encoding, with the "additional" bits are set to 0
+     * @param RD            running disparity, -1 or 1
+     * @return std::uint8_t encoded symbol - uint8_t used to transport 6 bit symbol of 5b/6b encoding, with the "additional" bits are set to 0
      */
     std::uint8_t encodeByte5b6b(std::uint8_t input, int RD);
 
@@ -47,9 +47,9 @@ namespace encodings {
      *          the "additional" bits are filled with '0's 
      *          Throws std::invalid_argument if RD is neither -1 nor 1
      * 
-     * @param input         - symbol to encode - uint8_t used to transport 3 bit symbol of 3b/4b encoding, with the "additional" bits are set to 0
-     * @param RD            - running disparity, -1 or 1
-     * @return std::uint8_t - encoded symbol - uint8_t used to transport 4 bit symbol of 3b/4b encoding, with the "additional" bits are set to 0
+     * @param input         symbol to encode - uint8_t used to transport 3 bit symbol of 3b/4b encoding, with the "additional" bits are set to 0
+     * @param RD            running disparity, -1 or 1
+     * @return std::uint8_t encoded symbol - uint8_t used to transport 4 bit symbol of 3b/4b encoding, with the "additional" bits are set to 0
      */
     std::uint8_t encodeByte3b4b(std::uint8_t input, int RD);
 
@@ -57,8 +57,8 @@ namespace encodings {
      * @brief Counts high bits ('1') in the given 10bit symbol
      * @details While such implementation is obviously inefficient, it is used to avoid relying on compiler's built-in functions
      * 
-     * @param input - 10bit symbol to count high bits in
-     * @return int  - number of high bits in the symbol
+     * @param input 10bit symbol to count high bits in
+     * @return int  number of high bits in the symbol
      */
     int count_ones(symbol10 input);
 
@@ -72,9 +72,9 @@ namespace encodings {
      *          RD is the difference between the number of '1' and '0' bits in the previous encoded symbol
      *          and is used to choose the correct 5b/6b and 3b/4b encoding of the next symbol
      * 
-     * @param input     - symbol to encode - uint8_t used to transport 8 bit symbol of 8b/10b encoding, with the "additional" bits are set to 0
-     * @param RD        - running disparity, -1 or 1
-     * @return symbol10 - uint16_t used to transport 10 bit symbol of 8b/10b encoding, with the "additional" bits are set to 0
+     * @param input     symbol to encode - uint8_t used to transport 8 bit symbol of 8b/10b encoding, with the "additional" bits are set to 0
+     * @param RD        running disparity, -1 or 1
+     * @return symbol10 uint16_t used to transport 10 bit symbol of 8b/10b encoding, with the "additional" bits are set to 0
      */
     symbol10 encodeByte8b10b(std::uint8_t input, int RD);
 
@@ -91,8 +91,8 @@ namespace encodings {
      *          The function also tracks the "running disparity" (RD) of the encoded symbols
      *          and updates it accordingly
      * 
-     * @param data      - vector of bytes to encode, must have length divisible by 4, not modified
-     * @return bytesVec - 8b/10b encoded vector of bytes
+     * @param data      vector of bytes to encode, must have length divisible by 4, not modified
+     * @return bytesVec 8b/10b encoded vector of bytes
      */
     bytesVec encodeBytesVec8b10b(const bytesVec& data);
 
@@ -105,8 +105,8 @@ namespace encodings {
      *          Then it extracts the older 4 bits of the 10bit symbol and decodes them using DECODE_3b4b table
      *          The decoded 6 and 4 bits are then combined into 8bit symbol
      * 
-     * @param symbol        - 10bit symbol to decode
-     * @return std::uint8_t - 8bit decoded symbol
+     * @param symbol        10bit symbol to decode
+     * @return std::uint8_t 8bit decoded symbol
      */
     std::uint8_t decodeSymbol10b8b(symbol10 symbol);
 
@@ -121,8 +121,8 @@ namespace encodings {
      *          throws std::invalid_argument otherwise.
      *          During decoding 8b/10b encoding there is no need to track the "running disparity" (RD) of the encoded symbols
      * 
-     * @param data      - vector of bytes encided in 8b/10b to decode, must have length divisible by 4, not modified
-     * @return bytesVec - decoded vector of bytes
+     * @param data      vector of bytes encided in 8b/10b to decode, must have length divisible by 4, not modified
+     * @return bytesVec decoded vector of bytes
      */
     bytesVec decodeBytesVec10b8b(const bytesVec& data);
 };

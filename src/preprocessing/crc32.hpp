@@ -18,24 +18,24 @@ namespace crc32 {
      *          Implementation by https://gist.github.com/timepp/1f678e200d9e0f2a043a9ec6b3690635
      *          Only changed type of j to int from size_t
      * 
-     * @param table - pointer to the table to be filed with CRC32 values
+     * @param table pointer to the table to be filed with CRC32 values
      */
 	void generate_table(uint32_t *table);
 
     /**
      * @brief Calculates CRC32 of the given bytesVec, using pregenerated CRC32 reference table
      * 
-     * @param table     - pointer to the pregenerated CRC32 reference table (genreted by generate_table())
-     * @param data      - vector of bytes to calculate CRC32 of
-     * @return uint32_t - CRC32 value of the data, as uint32_t 
+     * @param table     pointer to the pregenerated CRC32 reference table (genreted by generate_table())
+     * @param data      vector of bytes to calculate CRC32 of
+     * @return uint32_t CRC32 value of the data, as uint32_t 
      */
 	uint32_t crc(uint32_t* table, const bytesVec& data);
 
     /**
      * @brief Converts CRC32 value from uint32_t to bytesVec of 4 bytes
      * 
-     * @param crc       - CRC32 value to be converted
-     * @return bytesVec - vector of 4 bytes equal to the CRC32 value of crc 
+     * @param crc       CRC32 value to be converted
+     * @return bytesVec vector of 4 bytes equal to the CRC32 value of crc 
      */
     bytesVec toBytesVec(uint32_t crc);
 };
