@@ -108,7 +108,7 @@ namespace encodings {
         return (y << 5) | x;
     }
 
-    bytesVec decodeByteVec10b8b(const bytesVec& data) {
+    bytesVec decodeBytesVec10b8b(const bytesVec& data) {
         if (data.size() % 5 != 0) {
             throw std::invalid_argument("Data size must be divisible by 4");
         }

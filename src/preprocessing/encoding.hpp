@@ -124,5 +124,5 @@ namespace encodings {
      * @param data      - vector of bytes encided in 8b/10b to decode, must have length divisible by 4, not modified
      * @return bytesVec - decoded vector of bytes
      */
-    bytesVec decodeByteVec10b8b(const bytesVec& data);
+    bytesVec decodeBytesVec10b8b(const bytesVec& data);
 };

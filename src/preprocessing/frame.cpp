@@ -290,7 +290,7 @@ int main() {
     bytesVec encoded = encodings::encodeBytesVec8b10b(testFrame);
     printBytesVec(encoded);
     std::cout << "\tENCODED FRAME" << std::endl;
-    bytesVec decoded = encodings::decodeByteVec10b8b(encoded);
+    bytesVec decoded = encodings::decodeBytesVec10b8b(encoded);
     std::cout << "\n";
     printBytesVec(decoded);
     std::cout << "\tDECODED FRAME" << std::endl;
@@ -304,7 +304,7 @@ int main() {
     bytesVec flipped = errors::flipBits(encoded, errors::getPositionsInEncodedFrame(targets, gen, testFrame.size()));
     printBytesVec(flipped);
     std::cout << "\tFLIPPED FRAME" << std::endl;
-    printBytesVec(encodings::decodeByteVec10b8b(flipped));
+    printBytesVec(encodings::decodeBytesVec10b8b(flipped));
     std::cout << "\tDECODED FRAME" << std::endl;
     printBytesVec(testFrame);
     std::cout << "\tTEST FRAME" << std::endl;
