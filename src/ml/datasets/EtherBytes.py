@@ -1,6 +1,6 @@
 from torch.utils.data import Dataset
 
-from funcs import byte_tensor
+from .funcs import byte_tensor
 
 
 class EtherBytes(Dataset):

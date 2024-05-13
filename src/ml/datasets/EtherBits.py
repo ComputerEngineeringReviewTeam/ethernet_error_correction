@@ -1,6 +1,6 @@
 from torch.utils.data import Dataset
 
-from funcs import bitify, bit_tensor
+from .funcs import bit_tensor
 
 
 class EtherBits(Dataset):

@@ -3,7 +3,7 @@ from functools import reduce
 
 
 def bitify(byte: int):
-    return [(byte << i) & 1 for i in range(7, -1, -1)]
+    return [(byte >> i) & 1 for i in range(7, -1, -1)]
 
 
 def bit_tensor(frame: bytes):
@@ -12,4 +12,5 @@ def bit_tensor(frame: bytes):
 
 
 def byte_tensor(frame: bytes):
-    return torch.tensor(*list(frame), dtype=torch.uint8)
+    bit_stream = reduce(lambda a, b: a + b, map(lambda x: [x], frame))
+    return torch.tensor(bit_stream, dtype=torch.uint8)
