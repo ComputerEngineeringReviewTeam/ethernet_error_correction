@@ -1,5 +1,5 @@
 # .gitignore
-
+/bin
 /models
-/venv
+/.venv
 /.vscode
