@@ -27,8 +27,8 @@ bytesVec randomMAC();
  * @details Frame is in the format of Wireshark capture, ie.
  *          chain of bytes written in hexadecimal, separated by '|'
  * 
- * @param line      - string representation a Ethernet frame
- * @return bytesVec - vector of bytes
+ * @param line      string representation a Ethernet frame
+ * @return bytesVec vector of bytes
  */
 bytesVec parseFrame(std::string line);
 
@@ -39,33 +39,33 @@ bytesVec parseFrame(std::string line);
  *          As additional informations are added by Wireshark (timestamp etc.), the function filters only lines starting with '|0'
  *          To make parsing easier the beginning "|0   " is removed from each line containing a frame
  * 
- * @param filename                  - name of the file containing frames
- * @return std::vector<bytesVec>    - vector of frames, each frame is a vector of bytes
+ * @param filename               name of the file containing frames
+ * @return std::vector<bytesVec> vector of frames, each frame is a vector of bytes
  */
 std::vector<bytesVec> readFrames(std::string filename);
 
 /**
  * @brief Prints bytesVec with std::cout as series of bytes in hex, separated by ' ' and followed by '::' and size in bytes
  * 
- * @param bytes - vector of bytes to be printed
+ * @param bytes vector of bytes to be printed
  */
 void printBytesVec(const bytesVec& bytes);
 
 /**
  * @brief Write bytesVec as vector bytes to binary file
  * 
- * @param bytes     - vector of bytes to be written
- * @param filename  - name of the file to write to
+ * @param bytes    vector of bytes to be written
+ * @param filename name of the file to write to
  */
 void writeBytesVecToBinary(const bytesVec& bytes, std::string filename);
 
 /**
  * @brief Padds the bytesVec with given (or default = 0) padding to the given size
  * 
- * @param bytes     - vector of bytes to be padded, not modified
- * @param size      - size to which the vector should be padded
- * @param padding   - byte to be used as padding, default is 0
- * @return bytesVec - padded vector of bytes
+ * @param bytes     vector of bytes to be padded, not modified
+ * @param size      size to which the vector should be padded
+ * @param padding   byte to be used as padding, default is 0
+ * @return bytesVec padded vector of bytes
  */
 bytesVec rightPadBytesVec(const bytesVec& bytes, int size, byte padding = 0);
 
