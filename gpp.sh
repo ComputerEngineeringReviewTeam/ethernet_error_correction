@@ -1,1 +1,1 @@
-g++ src/preprocessing/frame.cpp src/preprocessing/crc32.cpp src/preprocessing/transerrors.cpp src/preprocessing/encoding.cpp -o bin/frame
+g++ src/prep/frame.cpp src/prep/crc32.cpp src/prep/transerrors.cpp src/prep/encoding.cpp src/prep/testing.cpp -o bin/frame
