@@ -57,7 +57,7 @@ void writeBytesVecToBinary(const bytesVec& bytes, std::string filename) {
     file.close();
 }
 
-bytesVec rightPadBytesVec(const bytesVec& bytes, int size, byte padding = 0) {
+bytesVec rightPadBytesVec(const bytesVec& bytes, int size, byte padding) {
     bytesVec padded = bytes;
     padded.resize(size, padding);
     return padded;
