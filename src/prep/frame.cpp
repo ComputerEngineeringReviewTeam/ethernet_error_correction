@@ -66,13 +66,30 @@ bytesVec rightPadBytesVec(const bytesVec& bytes, int size, byte padding) {
 bytesVec randomizeMAC(const bytesVec& frame, int mode) {
     bytesVec randomized = frame;
     if (mode == 0 || mode == 2) {
-        for (int i = 6; i < 12; i++) {
-            randomized[i] = rand() % 256;
+        for (int i = ETH2_DST_MAC_OFFSET; i < ETH2_DST_MAC_OFFSET + MAC_SIZE; i++) {
+            randomized[i] = rand() % BYTE_MAX;
         }
     }
     if (mode == 1 || mode == 2) {
-        for (int i = 0; i < 6; i++) {
-            randomized[i] = rand() % 256;
+        for (int i = ETH2_SRC_MAC_OFFSET; i < ETH2_SRC_MAC_OFFSET + MAC_SIZE; i++) {
+            randomized[i] = rand() % BYTE_MAX;
+        }
+    }
+    return randomized;
+}
+
+// IPv4
+
+bytesVec randomizeIPv4Addr(const bytesVec& frame, int mode) {
+    bytesVec randomized = frame;
+    if (mode == 1 || mode == 2) {
+        for (int i = IP4_DST_ADDR_OFFSET; i < IP4_DST_ADDR_OFFSET + IP4_ADDR_SIZE; i++) {
+            randomized[i] = rand() % BYTE_MAX;
+        }
+    }
+    if (mode == 0 || mode == 2) {
+        for (int i = IP4_SRC_ADDR_OFFSET; i < IP4_SRC_ADDR_OFFSET + IP4_ADDR_SIZE; i++) {
+            randomized[i] = rand() % BYTE_MAX;
         }
     }
     return randomized;

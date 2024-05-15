@@ -15,6 +15,28 @@ using byte = std::uint8_t;
 using bytesVec = std::vector<byte>;
 using symbol10 = std::uint16_t;
 
+const int BYTE_SIZE = 8;
+const int BYTE_MAX = 256;
+
+const int ETH2_HEADER_SIZE = 14;
+const int MAC_SIZE = 6;
+const int ETH2_SRC_MAC_OFFSET = 6;
+const int ETH2_DST_MAC_OFFSET = 0;
+const int ETH2_TYPE_SIZE = 2;
+const int ETH2_TYPE_OFFSET = 12;
+const int ETH2_PAYLOAD_OFFSET = 14;
+const int ETH2_MIN_PAYLOAD_SIZE = 46;
+const int ETH2_MAX_PAYLOAD_SIZE = 1500;
+const int ETH2_MIN_FRAME_SIZE = 64;
+const int ETH2_MAX_FRAME_SIZE = 1518;
+const int ETH2_CRC_SIZE = 4;
+const int ETH2_CRC_BACK_OFFSET = 4;
+
+const int IP4_HEADER_SIZE = 20;
+const int IP4_ADDR_SIZE = 4;
+const int IP4_SRC_ADDR_OFFSET = 12;
+const int IP4_DST_ADDR_OFFSET = 16;
+
 /**
  * @brief Creates bytesVec with 6 random bytes, immulating MAC address
  * 
@@ -73,9 +95,22 @@ bytesVec rightPadBytesVec(const bytesVec& bytes, int size, byte padding = 0);
  * @brief Replaces the MAC address in the given Ethernet II frame with a random ones
  * 
  * @param frame     Ethernet II frame as vector of bytes
- * @param mode      0 - randomize only source MAC address
- *                  1 - randomize only destination MAC address
+ * @param mode      0 - randomize only destination MAC address
+ *                  1 - randomize only source MAC address
  *                  2 - randomize both source and destination MAC addresses
  * @return bytesVec frame with randomized MAC addresses
  */
 bytesVec randomizeMAC(const bytesVec& frame, int mode);
+
+// IPv4
+
+/**
+ * @brief Replaces the IPv4 address in the given IPv4 packet with a random ones
+ * 
+ * @param frame     Ethernet II frame, containing IPv4 packet, as vector of bytes
+ * @param mode      0 - randomize only source IPv4 address
+ *                  1 - randomize only destination IPv4 address
+ *                  2 - randomize both source and destination IPv4 addresses
+ * @return bytesVec Ethernet II frame with randomized IPv4 addresses
+ */
+bytesVec randomizeIPv4Addr(const bytesVec& frame, int mode);
