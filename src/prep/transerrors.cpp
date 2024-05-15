@@ -72,4 +72,37 @@ namespace transerrors {
         }
         return positions;
     }
+
+    bytesVec flipRandomBits(const bytesVec& data, int count, std::mt19937& gen) {
+        std::uniform_int_distribution<int> dist(0, data.size() * 8 - 1);
+        std::unordered_set<int> positions;
+        int uniqueErrors = 0;
+        while (uniqueErrors < count) {
+            int pos = dist(gen);
+            auto inserted = positions.insert(pos);
+            if (inserted.second) {
+                uniqueErrors++;
+            }
+        }
+        return flipBits(data, positions);
+    }
+
+    bytesVec flipRandomBits(const bytesVec& data, const std::vector<double>& chances, std::mt19937& gen) {
+        std::uniform_int_distribution<int> dist(0, data.size() * 8 - 1);
+        std::uniform_real_distribution<double> next(0, 1);
+        std::unordered_set<int> positions;
+
+        positions.insert(dist(gen));    // guaranteed to insert at least one position
+
+        for (int i = 0; i < chances.size(); i++)
+        {
+            double chanceForNext = next(gen);
+            if (chanceForNext < chances[i])
+            {
+                positions.insert(dist(gen));
+            }
+        }
+        
+        return flipBits(data, positions);
+    }
 };

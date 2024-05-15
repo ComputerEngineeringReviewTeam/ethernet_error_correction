@@ -10,7 +10,7 @@
 #include <unordered_set>
 #include <random>
 
-#include "encodingtables.hpp"
+#include "constants.hpp"
 
 using byte = std::uint8_t;
 using bytesVec = std::vector<byte>;
@@ -106,4 +106,25 @@ namespace transerrors {
      * @return std::unordered_set<int> set of positions of bits to be flipped
      */
     std::unordered_set<int> getPositionsInEncodedFrame(const std::unordered_map<std::string, int>& targets, std::mt19937& gen, int plainframeSize);
+
+    /**
+     * @brief Flips given number of randomly chosen bits in the given vector of bytes
+     * 
+     * @param data      vector of bytes to be modified
+     * @param count     number of bits to flip
+     * @param gen       mt19937 random number generator
+     * @return bytesVec new vector of bytes with flipped bits
+     */
+    bytesVec flipRandomBits(const bytesVec& data, int count, std::mt19937& gen);
+
+    /**
+     * @brief Flips at least 1 bit in each byte of the given vector of bytes, more bits might be flipped according to the given probabilities
+     * 
+     * @param data      vector of bytes to be modified
+     * @param chances   vector of probabilities of flipping bits in each byte, each should be in range [0, 1], 
+     *                  sizes longer than data will not result in more than data.size() bits flipped
+     * @param gen       mt19937 random number generator
+     * @return bytesVec new vector of bytes with flipped bits
+     */
+    bytesVec flipRandomBits(const bytesVec& data, const std::vector<double>& chances, std::mt19937& gen);
 };
