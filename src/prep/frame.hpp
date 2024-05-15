@@ -68,3 +68,14 @@ void writeBytesVecToBinary(const bytesVec& bytes, std::string filename);
  * @return bytesVec padded vector of bytes
  */
 bytesVec rightPadBytesVec(const bytesVec& bytes, int size, byte padding = 0);
+
+/**
+ * @brief Replaces the MAC address in the given Ethernet II frame with a random ones
+ * 
+ * @param frame     Ethernet II frame as vector of bytes
+ * @param mode      0 - randomize only source MAC address
+ *                  1 - randomize only destination MAC address
+ *                  2 - randomize both source and destination MAC addresses
+ * @return bytesVec frame with randomized MAC addresses
+ */
+bytesVec randomizeMAC(const bytesVec& frame, int mode);

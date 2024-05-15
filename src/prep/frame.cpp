@@ -62,3 +62,18 @@ bytesVec rightPadBytesVec(const bytesVec& bytes, int size, byte padding) {
     padded.resize(size, padding);
     return padded;
 }
+
+bytesVec randomizeMAC(const bytesVec& frame, int mode) {
+    bytesVec randomized = frame;
+    if (mode == 0 || mode == 2) {
+        for (int i = 6; i < 12; i++) {
+            randomized[i] = rand() % 256;
+        }
+    }
+    if (mode == 1 || mode == 2) {
+        for (int i = 0; i < 6; i++) {
+            randomized[i] = rand() % 256;
+        }
+    }
+    return randomized;
+}
