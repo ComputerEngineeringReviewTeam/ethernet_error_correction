@@ -68,4 +68,3 @@ void writeBytesVecToBinary(const bytesVec& bytes, std::string filename);
  * @return bytesVec padded vector of bytes
  */
 bytesVec rightPadBytesVec(const bytesVec& bytes, int size, byte padding = 0);
-

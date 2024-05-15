@@ -17,7 +17,7 @@ bytesVec parseFrame(std::string line) {
         try {
             bytes.push_back(std::stoi(token, nullptr, 16));
         } catch (std::invalid_argument& e) {
-            std::cout << "Invalid argument: " << token << "|" << std::endl;
+            //std::cout << "Invalid argument: " << token << "|" << std::endl;
         }
     }
     return bytes;
