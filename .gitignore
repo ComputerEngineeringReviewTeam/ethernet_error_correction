@@ -3,3 +3,7 @@
 /models
 /.venv
 /.vscode
+/.idea
+/src/ml/datasets/__pycache__
+*/__pycache__
+*.pyc
