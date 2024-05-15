@@ -37,6 +37,10 @@ const int IP4_ADDR_SIZE = 4;
 const int IP4_SRC_ADDR_OFFSET = 12;
 const int IP4_DST_ADDR_OFFSET = 16;
 
+const std::uint16_t ETH2_TYPE_IP4 = 0x0800;
+const std::uint16_t ETH2_TYPE_IP6 = 0x08dd;
+
+
 /**
  * @brief Creates bytesVec with 6 random bytes, immulating MAC address
  * 
@@ -101,6 +105,15 @@ bytesVec rightPadBytesVec(const bytesVec& bytes, int size, byte padding = 0);
  * @return bytesVec frame with randomized MAC addresses
  */
 bytesVec randomizeMAC(const bytesVec& frame, int mode);
+
+/**
+ * @brief Reads frames from binary file
+ * 
+ * @param filename               name of the file containing frames
+ * @param frameSize              size of each frame in bytes
+ * @return std::vector<bytesVec> vector of frames, each frame is a vector of bytes
+ */
+std::vector<bytesVec> readFramesFromBinary(std::string filename, int frameSize);
 
 // IPv4
 

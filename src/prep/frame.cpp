@@ -78,6 +78,24 @@ bytesVec randomizeMAC(const bytesVec& frame, int mode) {
     return randomized;
 }
 
+std::vector<bytesVec> readFramesFromBinary(std::string filename, int frameSize) {
+    std::vector<bytesVec> frames;
+    std::ifstream file(filename, std::ios::binary | std::ios::ate);
+    if (file.is_open()) {
+        std::streampos fileSize = file.tellg();
+        file.seekg(0, std::ios::beg);
+        int framesCount = fileSize / frameSize;
+        for (int i = 0; i < framesCount; i++) {
+            bytesVec frame(frameSize);
+            file.read((char*)frame.data(), frameSize);
+            frames.push_back(frame);
+        }
+    } else {
+        std::cout << "Error opening file" << std::endl;
+    }
+    return frames;
+}
+
 // IPv4
 
 bytesVec randomizeIPv4Addr(const bytesVec& frame, int mode) {
