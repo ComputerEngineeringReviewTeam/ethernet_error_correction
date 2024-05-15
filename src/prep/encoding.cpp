@@ -45,7 +45,7 @@ namespace encodings {
 
     bytesVec encodeBytesVec8b10b(const bytesVec& data) {
         if (data.size() % 4 != 0) {
-            throw std::invalid_argument("Data size must be divisible by 4");
+            throw std::invalid_argument("Data size must be divisible by 4 " + std::to_string(data.size()));
         }
 
         int RD = -1;
@@ -57,7 +57,15 @@ namespace encodings {
 
         for (int i = 0; i < data.size(); i++) {
             // encode new symbol and update buffer
-            symbol = encodeByte8b10b(data[i], RD);
+            try {
+                symbol = encodeByte8b10b(data[i], RD);
+            } catch (std::out_of_range& e) {
+                //std::cout << "Invalid input byte: " << std::to_string(data[i]) << std::endl;
+                return {};
+            } catch (std::invalid_argument& e) {
+                //std::cout << "Invalid RD value: " << std::to_string(RD) << std::endl;
+                return {};
+            }
             buffer = (buffer << 10) | symbol;
             bitsInBuffer += 10;
 
