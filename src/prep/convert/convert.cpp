@@ -52,7 +52,6 @@ int main()
     int complement4 = 0;
     bytesVec crcVec;
     uint32_t crcTable[256];
-    std::cout << "Started\n";
     crc32::generate_table(crcTable);
     int info[] = {0, 0, 0, 0, 0, 0, 0, 0};
     std::vector<double> errors = {1.0, 0.1};
@@ -68,7 +67,6 @@ int main()
         wsline.erase(0, 6);
 
         // Parse a new frame
-        std::cout << "Frame " << info[0] << std::endl;
         frame = parseFrame(wsline);
         info[0]++;
 
@@ -166,7 +164,7 @@ int main()
 
     std::cout << "Frames read: " << info[0] << std::endl;
     std::cout << "IPv4 frames: " << info[1] << std::endl;
-    std::cout << "Encoding failed: " << info[2] << std::endl;
+    std::cout << "Encoding fails: " << info[2] << std::endl;
     std::cout << "Frames encoded, processed and written: " << info[3] << std::endl;
 
     return 0;
