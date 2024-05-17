@@ -105,4 +105,60 @@ namespace transerrors {
         
         return flipBits(data, positions);
     }
+
+    std::unordered_set<int> getRandomPositions(int count, int size, std::mt19937& gen) {
+        std::uniform_int_distribution<int> dist(0, size - 1);
+        std::unordered_set<int> positions;
+        int uniqueErrors = 0;
+        while (uniqueErrors < count) {
+            int pos = dist(gen);
+            auto inserted = positions.insert(pos);
+            if (inserted.second) {
+                uniqueErrors++;
+            }
+        }
+        return positions;
+    }
+
+    std::unordered_set<int> getRandomPositions(const std::vector<double>& chances, int size, std::mt19937& gen) {
+        std::uniform_int_distribution<int> dist(0, size - 1);
+        std::uniform_real_distribution<double> next(0, 1);
+        std::unordered_set<int> positions;
+
+        for (int i = 0; i < chances.size(); i++)
+        {
+            double chanceForNext = next(gen);
+            if (chanceForNext < chances[i])
+            {
+                positions.insert(dist(gen));
+            }
+        }
+        
+        return positions;
+    }
+
+    std::unordered_map<std::string, int> classifyPositions(const std::unordered_set<int>& positions, int plainframeSize) {
+        auto classified = FIELDS_TEMPLATE_MAP;
+
+        for (int pos : positions) {
+            if (pos < 60) {
+                classified["DestMAC"]++;
+            } else if (pos < 120) {
+                classified["SourceMAC"]++;
+            } else if (pos < 140) {
+                classified["EtherType"]++;
+            } else if (pos < plainframeSize * 8 - 40) {
+                classified["Data"]++;
+                if (pos < 340) {
+                    classified["IPHeader"]++;
+                } else {
+                    classified["IPData"]++;
+                }
+            } else {
+                classified["CRC"]++;
+            }
+        }
+
+        return classified;
+    }
 };

@@ -16,12 +16,24 @@ using byte = std::uint8_t;
 using bytesVec = std::vector<byte>;
 using symbol10 = std::uint16_t;
 
+const std::unordered_map<std::string, int> FIELDS_TEMPLATE_MAP = {
+    {"DestMAC", 0},
+    {"SourceMAC", 0},
+    {"EtherType", 0},
+    {"Data", 0},
+    {"IPHeader", 0},
+    {"IPData", 0},
+    {"CRC", 0}
+};
+
 namespace transerrors {
 
     /**
     * @brief Negates bits at given positions in given vector of bytes
     * @details If the positions would be {0, 12, 17} then bits negated would be: 
-    *          0th bit of 0th byte, 4th bit of 1st byte, 1st bit of 3rd byte and so on.
+    *           - 0th bit of 0th byte, 
+    *           - 4th bit of 1st byte, 
+    *           - 1st bit of 3rd byte and so on
     *          Positions out of range are ignored.    
     * 
     * @param data      vector of original bytes, not modified
@@ -127,4 +139,43 @@ namespace transerrors {
      * @return bytesVec new vector of bytes with flipped bits
      */
     bytesVec flipRandomBits(const bytesVec& data, const std::vector<double>& chances, std::mt19937& gen);
+
+    /**
+     * @brief Get `count` positions of random bits in the range [0, size) with uniform distribution
+     * 
+     * @param count                    number of positions to get
+     * @param size                     range of positions
+     * @param gen                      mt19937 random number generator
+     * @return std::unordered_set<int> set of positions of bits to be flipped
+     */
+    std::unordered_set<int> getRandomPositions(int count, int size, std::mt19937& gen);
+
+    /**
+     * @brief Get positions of random bits in the range [0, size) with probabilities given in the vector of `chances`
+     * 
+     * @param chances                  vector of probabilities of flipping bits in each position, each should be in range [0, 1]
+     * @param size                     range of positions
+     * @param gen                      mt19937 random number generator
+     * @return std::unordered_set<int> set of positions of bits to be flipped
+     */
+    std::unordered_set<int> getRandomPositions(const std::vector<double>& chances, int size, std::mt19937& gen);
+
+    /**
+     * @brief Assigns the positions of bits to various fields of an Ethernet II frame, containing IPv4 packet
+     * @details The function classifies the positions of bits to be flipped into the fields of an Ethernet II frame
+     *          The frame is assumed to be 8b/10b encoded and contain an IPv4 packet
+     *          The fields are:
+     *              - "DestMAC"   - first 6 bytes of the frame  (0 - 6)
+     *              - "SourceMAC" - next 6 bytes of the frame   (7 - 12)
+     *              - "EtherType" - next 2 bytes of the frame   (13 - 14)
+     *              - "Data"      - all bytes between the header and the last 4 bytes of CRC
+     *                  - "IPHeader" - first 20 bytes of the Data field (15 - 34)
+     *                  - "IPData"   - the rest of the Data field       (35 - size-5)
+     *              - "CRC"       - last 4 bytes of the frame   (size-4 - size-1)
+     * 
+     * @param positions                             set of positions of bits to be flipped
+     * @param plainframeSize                        length of the frame in bytes before encoding (which might introduce padding)
+     * @return std::unordered_map<std::string, int> map in format {"field": nr. of bits in the field in positions}
+     */
+    std::unordered_map<std::string, int> classifyPositions(const std::unordered_set<int>& positions, int plainframeSize);
 };
