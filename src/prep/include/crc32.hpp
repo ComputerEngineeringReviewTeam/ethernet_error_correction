@@ -18,7 +18,7 @@ namespace crc32 {
      *          Implementation by https://gist.github.com/timepp/1f678e200d9e0f2a043a9ec6b3690635
      *          Only changed type of j to int from size_t
      * 
-     * @param table pointer to the table to be filed with CRC32 values
+     * @param table pointer to preallocated array of 256 uint32_t values
      */
 	void generate_table(uint32_t *table);
 
