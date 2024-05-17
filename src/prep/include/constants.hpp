@@ -1,3 +1,6 @@
+// Author: Marek Szymański
+// Description: Constants used in the project
+
 #pragma once
 
 #include <cstdint>

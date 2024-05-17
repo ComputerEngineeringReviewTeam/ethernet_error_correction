@@ -1,4 +1,4 @@
-#include "crc32.hpp"
+#include "../include/crc32.hpp"
 
 namespace crc32 {
 	void generate_table(uint32_t *table)

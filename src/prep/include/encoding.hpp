@@ -8,6 +8,7 @@
 #include <stdexcept>
 
 #include "encodingtables.hpp"
+#include "constants.hpp"
 
 using byte = std::uint8_t;
 using bytesVec = std::vector<byte>;

@@ -1,4 +1,4 @@
-#include "encoding.hpp"
+#include "../include/encoding.hpp"
 
 namespace encodings {
     std::uint8_t encodeByte5b6b(std::uint8_t input, int RD) {
