@@ -5,6 +5,7 @@
 
 ### Global MAYBE
 - [ ] randomize IPv4 payloads ?
+- [ ] move bitify() function from Python into C for speed
 
 ## NEW STORAGE FORMAT
 Single set of preprocessed frames is stored in the following format:
