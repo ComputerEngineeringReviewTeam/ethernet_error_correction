@@ -149,7 +149,7 @@ namespace encodings
         {0b00000110, {0b00000110, 0b00000110}},
         // 2 variants for byte 7
         {0b00000111, {0b00001110, 0b00000001}}, // D.x.P7 - when not using D.x.A7
-        {0b00000111, {0b00001000, 0b00001000}}  // D.x.A7 - used when RD == -1 and x in {17, 18, 20}
+        {0b00001000, {0b00001000, 0b00001000}}  // D.x.A7 - used when RD == -1 and x in {17, 18, 20}
                                                 //               when RD == +1 and x in {11, 13, 14}
     };
 
