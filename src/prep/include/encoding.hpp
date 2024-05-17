@@ -91,6 +91,7 @@ namespace encodings {
      *          throws std::invalid_argument otherwise.
      *          The function also tracks the "running disparity" (RD) of the encoded symbols
      *          and updates it accordingly
+     *          ! Returns empty vector if invalid input byte is encountered
      * 
      * @param data      vector of bytes to encode, must have length divisible by 4, not modified
      * @return bytesVec 8b/10b encoded vector of bytes
