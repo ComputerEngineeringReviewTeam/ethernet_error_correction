@@ -4,10 +4,10 @@ from torch.utils.data import DataLoader
 from datasets.EtherBits import EtherBits
 from datasets.EtherBytes import EtherBytes
 
-test_data = "../../data/prep/capture_test.dat"
-test_xors = "../../data/prep/capture_test_xor.dat"
-bits = EtherBits(test_data, test_xors, frame_size=1518)
-byts = EtherBytes(test_data, test_xors, frame_size=1518)
+path = "../../"
+
+bits = EtherBits(path, train=True, frame_size=1518, smallDataset=True)
+byts = EtherBytes(path, train=False, frame_size=1518, smallDataset=True)
 
 print("\tBits - frame[0]")
 print(bits[0][0][:8], end=" ")
