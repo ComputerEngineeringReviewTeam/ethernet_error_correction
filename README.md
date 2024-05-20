@@ -38,6 +38,8 @@
     - util - various utilities
       - trainer.py - simple class that takes and trains torch.Module, to avoid repetitive code, probably not the best for real usage
     - test_datasets.py - simple testing for data loading, MOVE OUT / REMOVE
+    - network.py - neural network class
+    - training.py - code for training and assesment of the model
 
 
 ### Global TODO
