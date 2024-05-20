@@ -10,17 +10,31 @@ using byte = std::uint8_t;
 using bytesVec = std::vector<byte>;
 using symbol10 = std::uint16_t;
 
+const int allToTestRatio = 6;
+
 int main()
 {
     std::string wiresharkFile = "../data/raw/capture_test.txt";        // .txt file with Wireshark capture
-    std::string dataFile = "../data/prep/capture_test.dat";            // .dat binary file with encoded frames with errors
-    std::string xorFile = "../data/prep/capture_test_xor.dat";         // .dat binary file with error vectors
-    std::string errDescFile = "../data/prep/capture_test_errDesc.csv"; // .csv file with error classes
+
+    // === TRAINING DATASET ===
+    std::string dataTrainFile = "../data/prep/train/capture_test.dat";            // .dat binary file with encoded training frames with errors
+    std::string xorTrainFile = "../data/prep/train/capture_test_xor.dat";         // .dat binary file with error vectors for training
+    std::string errDescTrainFile = "../data/prep/train/capture_test_errDesc.csv"; // .csv file with error classes for training
+
+    // === TESTING DATASET ===
+    std::string dataTestFile = "../data/prep/test/capture_test.dat";            // .dat binary file with encoded testing frames with errors
+    std::string xorTestFile = "../data/prep/test/capture_test_xor.dat";         // .dat binary file with error vectors for testing
+    std::string errDescTestFile = "../data/prep/test/capture_test_errDesc.csv"; // .csv file with error classes for testing
 
     std::ifstream ifile(wiresharkFile);
-    std::ofstream ofile(dataFile, std::ios::binary);
-    std::ofstream ofileXor(xorFile, std::ios::binary);
-    std::ofstream ofileErrDesc(errDescFile);
+
+    std::ofstream ofileTrain(dataTrainFile, std::ios::binary);
+    std::ofstream ofileXorTrain(xorTrainFile, std::ios::binary);
+    std::ofstream ofileErrDescTrain(errDescTrainFile);
+
+    std::ofstream ofileTest(dataTestFile, std::ios::binary);
+    std::ofstream ofileXorTest(xorTestFile, std::ios::binary);
+    std::ofstream ofileErrDescTest(errDescTestFile);
 
     if (!ifile.is_open())
     {
@@ -28,21 +42,39 @@ int main()
         return 1;
     }
 
-    if (!ofile.is_open())
+    if (!ofileTrain.is_open())
     {
-        std::cout << "Error: could not open: " << dataFile << std::endl;
+        std::cout << "Error: could not open: " << dataTrainFile << std::endl;
         return 1;
     }
 
-    if (!ofileXor.is_open())
+    if (!ofileXorTrain.is_open())
     {
-        std::cout << "Error: could not open: " << xorFile << std::endl;
+        std::cout << "Error: could not open: " << xorTrainFile << std::endl;
         return 1;
     }
 
-    if (!ofileErrDesc.is_open())
+    if (!ofileErrDescTrain.is_open())
     {
-        std::cout << "Error: could not open: " << errDescFile << std::endl;
+        std::cout << "Error: could not open: " << errDescTrainFile << std::endl;
+        return 1;
+    }
+
+    if (!ofileTest.is_open())
+    {
+        std::cout << "Error: could not open: " << dataTestFile << std::endl;
+        return 1;
+    }
+
+    if (!ofileXorTest.is_open())
+    {
+        std::cout << "Error: could not open: " << xorTestFile << std::endl;
+        return 1;
+    }
+
+    if (!ofileErrDescTest.is_open())
+    {
+        std::cout << "Error: could not open: " << errDescTestFile << std::endl;
         return 1;
     }
 
@@ -54,6 +86,17 @@ int main()
     uint32_t crcTable[256];
     crc32::generate_table(crcTable);
     int info[] = {0, 0, 0, 0, 0, 0, 0, 0};
+    /*
+    Info table meaning:
+        0 - Total frames read from raw data file.
+        1 - Total IPv4 frames read from raw data file.
+        2 - Total encoding fails.
+        3 - Total frames properly encoded and written to output files.
+        4 - Total frames assigned to training data.
+        5 - Total frames assigned to testing data.
+        6 - Undefined
+        7 - Undefined
+    */
     std::vector<double> errors = {1.0, 0.1};
     std::mt19937 gen;
     
@@ -115,9 +158,48 @@ int main()
         auto errorsPosMap = transerrors::classifyPositions(errorsPos, unpaddedSize);
         frame = transerrors::flipBits(frame, errorsPos);
 
+        //Pointers pointing to the file that will be used to write this frame
+        std::ofstream* ofile = nullptr;
+        std::ofstream* ofileXor = nullptr;
+        std::ofstream* ofileErrDesc = nullptr;
+
+        //Strings representing directories that will be used to write this frame
+        std::string dataFile;
+        std::string xorFile;
+        std::string errDescFile;
+
+        std::uniform_int_distribution<int> dist(0, allToTestRatio-1);
+        int roll = dist(gen);
+
+        //Assigning correct values to pointers and strings (assigning the frame to either test or training data)
+        if(!roll)
+        {
+            ofile = &ofileTest;
+            ofileXor = &ofileXorTest;
+            ofileErrDesc = &ofileErrDescTest;
+
+            dataFile = dataTestFile;
+            xorFile = xorTestFile;
+            errDescFile = errDescTestFile;
+
+            info[4]++;
+        }
+        else
+        {
+            ofile = &ofileTrain;
+            ofileXor = &ofileXorTrain;
+            ofileErrDesc = &ofileErrDescTrain;
+
+            dataFile = dataTrainFile;
+            xorFile = xorTrainFile;
+            errDescFile = errDescTrainFile;
+
+            info[5]++;
+        }
+
         // Write the new frame (with errors) to the output file
-        ofile.write((char *)frame.data(), frame.size());
-        if (ofile.fail())
+        ofile->write((char *)frame.data(), frame.size());
+        if (ofile->fail())
         {
             std::cout << "Error: writing to file: " << dataFile << " failed on frame " << info[3] << std::endl;
             return 1;
@@ -131,8 +213,8 @@ int main()
         }
 
         // Write the error vector to the output file
-        ofileXor.write((char *)xorFrame.data(), xorFrame.size());
-        if (ofileXor.fail())
+        ofileXor->write((char *)xorFrame.data(), xorFrame.size());
+        if (ofileXor->fail())
         {
             std::cout << "Error: writing to file: " << xorFile << " failed on xor-frame " << info[3] << std::endl;
             return 1;
@@ -143,14 +225,14 @@ int main()
         {
             if (std::next(it) == errorsPosMap.end())
             {
-                ofileErrDesc << it->second << "\n";
+                (*ofileErrDesc) << it->second << "\n";
             }
             else
             {
-                ofileErrDesc << it->second << ",";
+                (*ofileErrDesc) << it->second << ",";
             }
         }
-        if (ofileErrDesc.fail())
+        if (ofileErrDesc->fail())
         {
             std::cout << "Error: writing to file: " << errDescFile << " failed on the desc of frame " << info[3] << std::endl;
             return 1;
@@ -158,14 +240,19 @@ int main()
     }
 
     ifile.close();
-    ofile.close();
-    ofileXor.close();
-    ofileErrDesc.close();
+    ofileTrain.close();
+    ofileXorTrain.close();
+    ofileErrDescTrain.close();
+    ofileTest.close();
+    ofileXorTest.close();
+    ofileErrDescTest.close();
 
     std::cout << "Frames read: " << info[0] << std::endl;
     std::cout << "IPv4 frames: " << info[1] << std::endl;
     std::cout << "Encoding fails: " << info[2] << std::endl;
     std::cout << "Frames encoded, processed and written: " << info[3] << std::endl;
+    std::cout << "Total frames in training data: " << info[4] << std::endl;
+    std::cout << "Total frames in test data: " << info[5] << std::endl;
 
     return 0;
 }

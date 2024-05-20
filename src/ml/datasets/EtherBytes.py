@@ -8,7 +8,17 @@ class EtherBytes(Dataset):
     Dataset of Ethernet II frames encoded with 8b/10b encoding.
     Each frame is converted into a torch.tensor of bytes
     """
-    def __init__(self, filepath: str, xorpath: str, frame_size=1518):
+    def __init__(self, directory: str, train: bool, frame_size=1518, smallDataset: bool = False):
+        if train:
+            directory = directory + '/data/prep/train/'
+        else:
+            directory = directory + '/data/prep/test/'
+        if smallDataset:
+            filepath = directory + 'capture_test.dat'
+            xorpath = directory + 'capture_test_xor.dat'
+        else:
+            filepath = directory + 'capture.dat'
+            xorpath = directory + 'capture_xor.dat'
         self.frames = []
         self.xors = []
         with open(filepath, "rb") as f:
