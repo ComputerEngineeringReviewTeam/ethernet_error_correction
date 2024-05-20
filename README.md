@@ -10,20 +10,20 @@
 - data
   - raw - raw data ie. Wireshark capture files
   - prep - preprocessed data goes here, format below
-    -train - training data
-        - capture.txt - the big capture file
-        - capture_test.txt - smaller subset, for testing purposes
-        - capture_xor.txt - xors of the correct and damaged frames
-        - capture_test_xor.txt - smaller subset, xors of the correct and damaged frames
-        - capture_ErrDesc.csv - frame description (location of errors)
-        - capture_test_ErrDesc.csv - smaller subset, frame description (location of errors)
-    -test - test data
-        - capture.txt - the big capture file
-        - capture_test.txt - smaller subset, for testing purposes
-        - capture_xor.txt - xors of the correct and damaged frames
-        - capture_test_xor.txt - smaller subset, xors of the correct and damaged frames
-        - capture_ErrDesc.csv - frame description (location of errors)
-        - capture_test_ErrDesc.csv - smaller subset, frame description (location of errors)
+  - train - training data
+    - capture.txt - the big capture file
+      - capture_test.txt - smaller subset, for testing purposes
+      - capture_xor.txt - xors of the correct and damaged frames
+      - capture_test_xor.txt - smaller subset, xors of the correct and damaged frames
+      - capture_ErrDesc.csv - frame description (location of errors)
+      - capture_test_ErrDesc.csv - smaller subset, frame description (location of errors)
+    - test - test data
+      - capture.txt - the big capture file
+      - capture_test.txt - smaller subset, for testing purposes
+      - capture_xor.txt - xors of the correct and damaged frames
+      - capture_test_xor.txt - smaller subset, xors of the correct and damaged frames
+      - capture_ErrDesc.csv - frame description (location of errors)
+      - capture_test_ErrDesc.csv - smaller subset, frame description (location of errors)
 - src - actual source code
   - prep - data preprocessing code - written in C++
     - convert - main program(s) to preprocess the frame data
