@@ -12,9 +12,9 @@ class EtherBits(Dataset):
     """
     def __init__(self, directory: str, train: bool, frame_size: int = 1518, smallDataset: bool = False):
         if train:
-            directory = directory + '/data/prep/train/'
+            directory = directory + 'data/prep/train/'
         else:
-            directory = directory + '/data/prep/test/'
+            directory = directory + 'data/prep/test/'
         if smallDataset:
             filepath = directory + 'capture_test.dat'
             xorpath = directory + 'capture_test_xor.dat'

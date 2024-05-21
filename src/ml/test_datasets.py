@@ -23,12 +23,14 @@ byte_loader = DataLoader(byts, batch_size=size, shuffle=True)
 
 print("\tBits Loader [0]")
 for X, y in bit_loader:
+    print(X.shape, y.shape)
     print(X)
     print(y)
     break
 
 print("\tByte Loader [0]")
 for X, y in byte_loader:
+    print(X.shape, y.shape)
     print(X)
     print(y)
     break
