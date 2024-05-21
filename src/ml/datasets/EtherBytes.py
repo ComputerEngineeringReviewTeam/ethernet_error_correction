@@ -1,6 +1,5 @@
+import torch
 from torch.utils.data import Dataset
-
-from .funcs import byte_tensor
 
 
 class EtherBytes(Dataset):
@@ -23,10 +22,10 @@ class EtherBytes(Dataset):
         self.xors = []
         with open(filepath, "rb") as f:
             while frame_bytes := f.read(frame_size):
-                self.frames.append(byte_tensor(frame_bytes))
+                self.frames.append(torch.frombuffer(frame_bytes, dtype=torch.uint8))
         with open(xorpath, "rb") as f:
             while frame_bytes := f.read(frame_size):
-                self.xors.append(byte_tensor(frame_bytes))
+                self.xors.append(torch.frombuffer(frame_bytes, dtype=torch.uint8))
 
     def __len__(self):
         return len(self.frames)

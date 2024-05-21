@@ -1,8 +1,6 @@
-import os
-
+import numpy as np
+import torch
 from torch.utils.data import Dataset
-
-from .funcs import bit_tensor
 
 
 class EtherBits(Dataset):
@@ -19,16 +17,18 @@ class EtherBits(Dataset):
             filepath = directory + 'capture_test.dat'
             xorpath = directory + 'capture_test_xor.dat'
         else:
-            filepath = directory + 'capture.dat'
-            xorpath = directory + 'capture_xor.dat'
+            filepath = directory + 'big.dat'
+            xorpath = directory + 'big_xor.dat'
         self.frames = []
         self.xors = []
         with open(filepath, "rb") as f:
             while frame_bytes := f.read(frame_size):
-                self.frames.append(bit_tensor(frame_bytes))
+                ndarray = np.frombuffer(frame_bytes, dtype=np.uint8)
+                self.frames.append(torch.from_numpy(np.unpackbits(ndarray)))
         with open(xorpath, "rb") as f:
             while frame_bytes := f.read(frame_size):
-                self.xors.append(bit_tensor(frame_bytes))
+                ndarray = np.frombuffer(frame_bytes, dtype=np.uint8)
+                self.xors.append(torch.from_numpy(np.unpackbits(ndarray)))
 
     def __len__(self):
         return len(self.frames)
