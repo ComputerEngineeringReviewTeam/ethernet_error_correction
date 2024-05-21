@@ -9,22 +9,36 @@
 using byte = std::uint8_t;
 using bytesVec = std::vector<byte>;
 using symbol10 = std::uint16_t;
+using symbolVec = std::vector<symbol10>;
 
 const int allToTestRatio = 6;
 
+
 int main()
 {
-    std::string wiresharkFile = "../data/raw/capture_test.txt";        // .txt file with Wireshark capture
+    std::string filename = "big";
+
+    std::string trainDirPath = "../data/prep/train/";
+    std::string testDirPath = "../data/prep/test/";
+    std::string rawDataDirPath = "../data/raw";
+
+    std::string binaryExt = ".dat";
+    std::string csvExt = ".csv";
+
+    std::string xorLabel = "_xor";
+    std::string errDescLabel = "_errDesc";
+
+    std::string wiresharkFile = "../data/raw/capture1.txt";                             // .txt file with Wireshark capture
 
     // === TRAINING DATASET ===
-    std::string dataTrainFile = "../data/prep/train/capture_test.dat";            // .dat binary file with encoded training frames with errors
-    std::string xorTrainFile = "../data/prep/train/capture_test_xor.dat";         // .dat binary file with error vectors for training
-    std::string errDescTrainFile = "../data/prep/train/capture_test_errDesc.csv"; // .csv file with error classes for training
+    std::string dataTrainFile = trainDirPath + filename + binaryExt;                    // .dat binary file with encoded training frames with errors
+    std::string xorTrainFile = trainDirPath + filename + xorLabel + binaryExt;          // .dat binary file with error vectors for training
+    std::string errDescTrainFile = trainDirPath + filename + errDescLabel + csvExt;     // .csv file with error classes for training
 
     // === TESTING DATASET ===
-    std::string dataTestFile = "../data/prep/test/capture_test.dat";            // .dat binary file with encoded testing frames with errors
-    std::string xorTestFile = "../data/prep/test/capture_test_xor.dat";         // .dat binary file with error vectors for testing
-    std::string errDescTestFile = "../data/prep/test/capture_test_errDesc.csv"; // .csv file with error classes for testing
+    std::string dataTestFile = testDirPath + filename + binaryExt;                      // .dat binary file with encoded testing frames with errors
+    std::string xorTestFile = testDirPath + filename + xorLabel + binaryExt;            // .dat binary file with error vectors for testing
+    std::string errDescTestFile = testDirPath + filename + errDescLabel + binaryExt;    // .csv file with error classes for testing
 
     std::ifstream ifile(wiresharkFile);
 
@@ -80,6 +94,7 @@ int main()
 
     std::string wsline;
     bytesVec frame;
+    symbolVec encodedFrame;
     std::uint16_t type;
     int complement4 = 0;
     bytesVec crcVec;
@@ -94,7 +109,7 @@ int main()
         3 - Total frames properly encoded and written to output files.
         4 - Total frames assigned to training data.
         5 - Total frames assigned to testing data.
-        6 - Undefined
+        6 - IPv4 frames longer than 1514 bytes
         7 - Undefined
     */
     std::vector<double> errors = {1.0, 0.1};
@@ -102,23 +117,35 @@ int main()
     
     while (getline(ifile, wsline))
     {
+        // Filter off non-data lines
         if (wsline[0] != '|' || wsline[1] != '0')
         {
             continue;
         }
 
+        // Remove the first 6 characters - in Wireshark format they are always "|0   " before the actuall frame
         wsline.erase(0, 6);
 
         // Parse a new frame
         frame = parseFrame(wsline);
         info[0]++;
 
+        // Skip non-IPv4 frames
         type = (frame[ETH2_TYPE_OFFSET] << BYTE_SIZE) + frame[ETH2_TYPE_OFFSET + 1];
         if (type != ETH2_TYPE_IP4)
         {
             continue;
         }
+
+        // Skip frames larger than standard Ethernet II max size
+        if (frame.size() > ETH2_MAX_FRAME_SIZE - ETH2_CRC_SIZE)
+        {
+            info[6]++;
+            continue;
+        }
+
         info[1]++;
+
         // Randomize MAC addresses and IP addresses
         frame = randomizeMAC(frame, 2);
         frame = randomizeIPv4Addr(frame, 2);
@@ -128,23 +155,16 @@ int main()
         frame.insert(frame.end(), crcVec.begin(), crcVec.end());
 
         // Encode the frame using 8b/10b encoding
-        // For the encoding, the frame size must be a multiple of 4
-        frame = rightPadBytesVec(frame, frame.size() + (4 - (frame.size() % 4)), 0);
-        frame = encodings::encodeBytesVec8b10b(frame);
+        encodedFrame = encodings::encode8b10b(frame);
 
         // If the frame could not be encoded, skip it
-        if (frame.size() == 0)
+        if (encodedFrame.size() == 0)
         {
-            std::cout << "Error: encoding failed" << std::endl;
+            std::cout << "Encoding failed on frame" << info[2] << std::endl;
             info[2]++;
             continue;
         }
         info[3]++;
-
-        // Padd the encoded frame with 0s to the maximum size (1518 bytes)
-        // Save the original size of the frame for later use (error introduction)
-        int unpaddedSize = frame.size();
-        frame = rightPadBytesVec(frame, ETH2_MAX_FRAME_SIZE, 0);
 
         // At this point we also create an error-free copy of the encoded frame - the xorFrame - to be XORed with the frame with errors
         bytesVec xorFrame = frame;
@@ -152,11 +172,25 @@ int main()
         // Introduce errors to the encoded frame
         // First we get random positions of bits to flip, according to the given probabilities (errors vector)
         // Then we classify the positions to the fields of the Ethernet II frame (getting map of {field: nr. of errors})
-        // We use `unpaddedSize` to get the positions in the original frame, before the padding 0s were added
-        // Finally we flip the bits in the frame according to the positions
-        auto errorsPos = transerrors::getRandomPositions(errors, unpaddedSize, gen);
-        auto errorsPosMap = transerrors::classifyPositions(errorsPos, unpaddedSize);
-        frame = transerrors::flipBits(frame, errorsPos);
+        // We use the size of the frame before encoding to get the positions in the original frame
+        // Finally we flip the bits in the frame according to the positions and decode the frame back to bytes
+        auto errorsPos = transerrors::getRandomPositions(errors, frame.size(), gen);
+        auto errorsPosMap = transerrors::classifyPositions(errorsPos, frame.size());
+        encodedFrame = transerrors::flipBits(encodedFrame, errorsPos);
+        frame = encodings::decode8b10b(encodedFrame);
+
+        // Padding the both the frame (the one with errors) and the xorFrame (currently - error free copy) 
+        // to the max standard Ethernet II frame size - 1518 bytes
+        // This is done by adding 0s to the end of the frame
+        // First we detach the CRC32 checksum from the end of the frame (the last 4 bytes)
+        bytesVec crcWithErrors(frame.begin() + frame.size() - ETH2_CRC_SIZE, frame.end());
+        bytesVec crcGood(xorFrame.begin() + xorFrame.size() - ETH2_CRC_SIZE, xorFrame.end());
+        // Then we add 0s so that the frame is 1514 (ETH2_MAX_FRAME_SIZE - ETH2_CRC_SIZE) bytes long
+        frame = rightPadBytesVec(frame, ETH2_MAX_FRAME_SIZE - ETH2_CRC_SIZE);
+        xorFrame = rightPadBytesVec(xorFrame, ETH2_MAX_FRAME_SIZE - ETH2_CRC_SIZE);
+        // Finally we append the CRC32 checksum to the end of the frame
+        frame.insert(frame.end(), crcWithErrors.begin(), crcWithErrors.end());
+        xorFrame.insert(xorFrame.end(), crcGood.begin(), crcGood.end());
 
         //Pointers pointing to the file that will be used to write this frame
         std::ofstream* ofile = nullptr;
@@ -237,6 +271,10 @@ int main()
             std::cout << "Error: writing to file: " << errDescFile << " failed on the desc of frame " << info[3] << std::endl;
             return 1;
         }
+
+        if (info[3] % 10000 == 0) {
+            std::cout << "Frames processed and saved " << info[3] << std::endl;
+        }
     }
 
     ifile.close();
@@ -247,12 +285,14 @@ int main()
     ofileXorTest.close();
     ofileErrDescTest.close();
 
+    std::cout << std::endl << "=== INFO ===" << std::endl;
     std::cout << "Frames read: " << info[0] << std::endl;
     std::cout << "IPv4 frames: " << info[1] << std::endl;
     std::cout << "Encoding fails: " << info[2] << std::endl;
     std::cout << "Frames encoded, processed and written: " << info[3] << std::endl;
-    std::cout << "Total frames in training data: " << info[4] << std::endl;
-    std::cout << "Total frames in test data: " << info[5] << std::endl;
+    std::cout << "Total frames in test data: " << info[4] << std::endl;
+    std::cout << "Total frames in training data: " << info[5] << std::endl;
+    std::cout << "IPv4 frames longer than 1514 bytes: " << info[6] << std::endl;
 
     return 0;
 }
