@@ -36,15 +36,14 @@
       - EtherBytes.py - tensor of bytes (as torch.tensor.uint8)
       - funcs.py - some functions for converting from binary into torch.tensor
     - util - various utilities
-      - trainer.py - simple class that takes and trains torch.Module, to avoid repetitive code, probably not the best for real usage
+    - trainer.py - simple class that takes and trains torch.Module
     - test_datasets.py - simple testing for data loading, MOVE OUT / REMOVE
     - network.py - neural network class
-    - training.py - code for training and assesment of the model
+    - training.py - code for training and assesment of the model using the Trainer class
 
 
 ### Global TODO
 - [ ] better error handling in `encoding.cpp`
-- [ ] convert all data
 
 ### Global MAYBE
 - [ ] randomize IPv4 payloads ?

@@ -12,19 +12,52 @@ using symbol10 = std::uint16_t;
 
 const int allToTestRatio = 6;
 
-int main()
+int main(int argc, char* argv [])
 {
-    std::string wiresharkFile = "../data/raw/capture_test.txt";        // .txt file with Wireshark capture
+
+    std::string wiresharkFile;
 
     // === TRAINING DATASET ===
-    std::string dataTrainFile = "../data/prep/train/capture_test.dat";            // .dat binary file with encoded training frames with errors
-    std::string xorTrainFile = "../data/prep/train/capture_test_xor.dat";         // .dat binary file with error vectors for training
-    std::string errDescTrainFile = "../data/prep/train/capture_test_errDesc.csv"; // .csv file with error classes for training
+    std::string dataTrainFile;
+    std::string xorTrainFile;
+    std::string errDescTrainFile;
 
     // === TESTING DATASET ===
-    std::string dataTestFile = "../data/prep/test/capture_test.dat";            // .dat binary file with encoded testing frames with errors
-    std::string xorTestFile = "../data/prep/test/capture_test_xor.dat";         // .dat binary file with error vectors for testing
-    std::string errDescTestFile = "../data/prep/test/capture_test_errDesc.csv"; // .csv file with error classes for testing
+    std::string dataTestFile;
+    std::string xorTestFile;
+    std::string errDescTestFile;
+
+
+    if(argc>1 && argv[1][0]=='t')
+    {
+        wiresharkFile = "../data/raw/capture_test.txt";        // .txt file with Wireshark capture
+
+        // === TRAINING DATASET ===
+        dataTrainFile = "../data/prep/train/capture_test.dat";            // .dat binary file with encoded training frames with errors
+        xorTrainFile = "../data/prep/train/capture_test_xor.dat";         // .dat binary file with error vectors for training
+        errDescTrainFile = "../data/prep/train/capture_test_errDesc.csv"; // .csv file with error classes for training
+
+        // === TESTING DATASET ===
+        dataTestFile = "../data/prep/test/capture_test.dat";            // .dat binary file with encoded testing frames with errors
+        xorTestFile = "../data/prep/test/capture_test_xor.dat";         // .dat binary file with error vectors for testing
+        errDescTestFile = "../data/prep/test/capture_test_errDesc.csv"; // .csv file with error classes for testing
+    }
+    else
+    {
+        wiresharkFile = "../data/raw/capture1.txt";        // .txt file with Wireshark capture
+
+        // === TRAINING DATASET ===
+        dataTrainFile = "../data/prep/train/capture.dat";            // .dat binary file with encoded training frames with errors
+        xorTrainFile = "../data/prep/train/capture_xor.dat";         // .dat binary file with error vectors for training
+        errDescTrainFile = "../data/prep/train/capture_errDesc.csv"; // .csv file with error classes for training
+
+        // === TESTING DATASET ===
+        dataTestFile = "../data/prep/test/capture.dat";            // .dat binary file with encoded testing frames with errors
+        xorTestFile = "../data/prep/test/capture_xor.dat";         // .dat binary file with error vectors for testing
+        errDescTestFile = "../data/prep/test/capture_errDesc.csv"; // .csv file with error classes for testing
+    }
+
+
 
     std::ifstream ifile(wiresharkFile);
 
@@ -92,8 +125,8 @@ int main()
         1 - Total IPv4 frames read from raw data file.
         2 - Total encoding fails.
         3 - Total frames properly encoded and written to output files.
-        4 - Total frames assigned to training data.
-        5 - Total frames assigned to testing data.
+        4 - Total frames assigned to testing data.
+        5 - Total frames assigned to training data.
         6 - Undefined
         7 - Undefined
     */
@@ -251,8 +284,8 @@ int main()
     std::cout << "IPv4 frames: " << info[1] << std::endl;
     std::cout << "Encoding fails: " << info[2] << std::endl;
     std::cout << "Frames encoded, processed and written: " << info[3] << std::endl;
-    std::cout << "Total frames in training data: " << info[4] << std::endl;
-    std::cout << "Total frames in test data: " << info[5] << std::endl;
+    std::cout << "Total frames in training data: " << info[5] << std::endl;
+    std::cout << "Total frames in test data: " << info[4] << std::endl;
 
     return 0;
 }

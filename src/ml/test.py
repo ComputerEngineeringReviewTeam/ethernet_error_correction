@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 
-from util.trainer import Trainer
+from src.ml.trainer import Trainer
 from datasets.EtherBits import EtherBits
 
 training_data = EtherBits(
