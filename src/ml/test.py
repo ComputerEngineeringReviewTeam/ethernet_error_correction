@@ -3,14 +3,14 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 from util.trainer import Trainer
-from datasets.EtherBits import EtherBits
+from datasets.EtherBits_NEW import EtherBits_NEW
 
-training_data = EtherBits(
+training_data = EtherBits_NEW(
     directory="../../",
     train=True,
 )
 
-test_data = EtherBits(
+test_data = EtherBits_NEW(
     directory="../../",
     train=False,
 )
