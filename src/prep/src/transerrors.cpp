@@ -6,7 +6,19 @@ namespace transerrors {
         bytesVec flipped = data;
         for (int pos : positions) {
             try {
-                flipped.at(pos / 8) ^= (1 << (pos % 8));
+                flipped.at((int) (pos / 8)) ^= (1 << std::abs((pos % 8) - 8));
+            } catch (std::out_of_range& e) {
+                //std::cout << "Out of range: " << pos << std::endl;
+            }
+        }
+        return flipped;
+    }
+
+    symbolVec flipBits(const symbolVec&data, const std::unordered_set<int>& positions) {
+        symbolVec flipped = data;
+        for (int pos : positions) {
+            try {
+                flipped.at((int) (pos / 10)) ^= (1 << std::abs((pos % 10) - 9));
             } catch (std::out_of_range& e) {
                 //std::cout << "Out of range: " << pos << std::endl;
             }

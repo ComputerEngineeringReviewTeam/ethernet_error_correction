@@ -100,6 +100,39 @@ namespace encodings {
         return encoded;
     }
 
+    symbolVec encode8b10b(const bytesVec& data) {
+        symbolVec encoded;
+        symbol10 symbol = 0;
+        int RD = -1;
+
+        for (int i = 0; i < data.size(); i++) {
+            try {
+                symbol = encodeByte8b10b(data[i], RD);
+            } catch (std::out_of_range& e) {
+                //std::cout << "Invalid input byte: " << std::to_string(data[i]) << std::endl;
+                return {};
+            } catch (std::invalid_argument& e) {
+                //std::cout << "Invalid RD value: " << std::to_string(RD) << std::endl;
+                return {};
+            }
+
+            // check for running disparity and update RD if needed
+            // '1's in symbol10 (uint16_t really) is counted by count_ones()
+            // '0's in uint16_t would be 16 - count_ones(),
+            // but we are looking for the difference in a 10bit symbol, so 
+            // '0's in symbol10 is 16 - count_ones() - 6 (6 '0's of front-padding)
+            // so the difference is '1's - '0's = count_ones() - (16 - count_ones() - 6) = 2*count_ones() - 10
+            int diff = 2 * count_ones(symbol) - 10;
+            if (diff < 0)
+                RD = -1;
+            else if (diff > 0)
+                RD = 1;
+
+            encoded.push_back(symbol);
+        }
+        return encoded;
+    }
+
     std::uint8_t decodeSymbol10b8b(symbol10 symbol) {
         std::uint8_t abcdei = symbol >> 4;
         std::uint8_t fghj = symbol & 0b1111;
@@ -121,7 +154,6 @@ namespace encodings {
             throw std::invalid_argument("Data size must be divisible by 4");
         }
 
-        int RD = -1;
         bytesVec decoded;               // decoded data, in a vector of bytes (bytesVec)
         std::uint64_t buffer = 0;       // buffer used to hold 5 bytes (4 10 bit symbols) before they are decoded and saved to decoded bytesVec
         int bitsInBuffer = 0;           // state of the buffer
@@ -147,6 +179,18 @@ namespace encodings {
                     decoded.push_back(invertBuffer[j]);
                 }
             }
+        }
+
+        return decoded;
+    }
+
+    bytesVec decode8b10b(const symbolVec& data) {
+        bytesVec decoded;
+        std::uint8_t decodedByte = 0;
+
+        for (int i = 0; i < data.size(); i++) {
+            decodedByte = decodeSymbol10b8b(data[i]);
+            decoded.push_back(decodedByte);
         }
 
         return decoded;

@@ -15,6 +15,7 @@
 using byte = std::uint8_t;
 using bytesVec = std::vector<byte>;
 using symbol10 = std::uint16_t;
+using symbolVec = std::vector<symbol10>;
 
 const std::unordered_map<std::string, int> FIELDS_TEMPLATE_MAP = {
     {"DestMAC", 0},
@@ -38,9 +39,18 @@ namespace transerrors {
     * 
     * @param data      vector of original bytes, not modified
     * @param positions vector of positions to negate bits at, should be no longer than 8*data.size() (nr of bits in data)
-    * @return          vector of bytes with bits negated at given positions
+    * @return bytesVec vector of bytes with bits negated at given positions
     */
     bytesVec flipBits(const bytesVec&data, const std::unordered_set<int>& positions);
+
+    /**
+     * @brief Negates bits at given positions in given vector of 10-bit symbols
+     * 
+     * @param data       vector of original 10-bit symbols, not modified
+     * @param positions  vector of positions to negate bits at, should be no longer than 10*data.size() (nr of bits in data)
+     * @return symbolVec vector of 10-bit symbols with bits negated at given positions
+     */
+    symbolVec flipBits(const symbolVec&data, const std::unordered_set<int>& positions);
 
     /**
      * @brief Get the position of random bit in destination MAC field of 8b/10b encoded Ethernet II frame
