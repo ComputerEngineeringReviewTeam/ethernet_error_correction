@@ -44,6 +44,7 @@ class Trainer:
         self.model.load_state_dict(torch.load("models/"+model_path+".model"))
 
     def train(self, epochs):
+        self.model.train()
         for epoch in range(epochs):
             enumerate = 0
             for x, y in self.train_loader:
@@ -60,6 +61,7 @@ class Trainer:
                 enumerate += 1
 
     def test(self):
+        self.model.eval()
         sampleCount = 0
         correctCount = 0
         with torch.no_grad():
