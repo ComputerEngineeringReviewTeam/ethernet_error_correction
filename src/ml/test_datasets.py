@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import DataLoader
 
-from datasets.EtherBits_NEW import EtherBits_NEW
+from src.ml.datasets.EtherBits import EtherBits
 from datasets.EtherBytes import EtherBytes
 
 path = "../../"

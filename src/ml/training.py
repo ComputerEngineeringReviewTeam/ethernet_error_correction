@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 
-from datasets.EtherBits_NEW import EtherBits_NEW
+from src.ml.datasets.EtherBits import EtherBits
 
 from src.ml.modules.network import Network
 
@@ -10,8 +10,8 @@ path = "../../"
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-trainSet = EtherBits_NEW(path, train=True, frame_size=1518, smallDataset=True)
-testSet = EtherBits_NEW(path, train=False, frame_size=1518, smallDataset=True)
+trainSet = EtherBits(path, train=True, frame_size=1518, smallDataset=True)
+testSet = EtherBits(path, train=False, frame_size=1518, smallDataset=True)
 batch = 5000
 print(len(trainSet))
 print(len(testSet))
