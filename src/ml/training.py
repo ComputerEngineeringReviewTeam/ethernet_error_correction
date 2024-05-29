@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader
 from datasets.EtherBits import EtherBits
 
 from network import Network
+from trainer import Trainer
 
 path = "../../"
 
@@ -20,36 +21,30 @@ model = Network()
 
 loss_fn = nn.MSELoss(reduction='mean')
 
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+trainingManager = Trainer(model, loss_fn, 1E-3, trainLoader, testLoader, device)
 
-for epoch in range(1):
-    for x, y in trainLoader:
-        x, y = x.to(device), y.to(device)
+while True:
+    command = input("Next command: ")
 
-        predictions = model(x.to(torch.float32))
-        loss = loss_fn(predictions, y.to(torch.float32))
+    if command == 'train':
+        epochs = int(input("Number of epochs: "))
+        trainingManager.train(epochs)
 
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+    if command == 'test':
+        trainingManager.test()
 
-        print(f'Epoch: {epoch}, Loss: {loss.item()}')
+    if command == 'quit':
+        break
 
-sampleCount = 0
-correctCount = 0
+    if command == 'save':
+        path = input("Path: ")
+        trainingManager.saveModel(path)
 
-with torch.no_grad():
-    for x, y in testLoader:
-        x, y = x.to(device), y.to(device)
-        predictions = model(x.to(torch.float32))
-        for pred in range(predictions.size(0)):
-            same = True
-            for bit in range(predictions.size(1)):
-                if bool(predictions[pred][bit]) != y[pred][bit]:
-                    same = False
-            correctCount += same
-        sampleCount += predictions.size(0)
+    if command == 'load':
+        path = input("Path: ")
+        trainingManager.loadModel(path)
 
+    if command == 'learning_rate':
+        rate = float(input("Rate: "))
+        trainingManager.setLearningRate(rate)
 
-print(correctCount)
-print(sampleCount)

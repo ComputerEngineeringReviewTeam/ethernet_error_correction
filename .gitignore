@@ -1,8 +1,11 @@
-# .gitignore
-/bin
+
+/bin/*
 /models
 /.venv
 /.vscode
 /.idea
 **/__pycache__/
-/data
+/data/*.dat
+/data/*.txt
+/data/*.csv
+/src/ml/models/*
