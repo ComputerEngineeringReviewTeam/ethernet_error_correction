@@ -4,10 +4,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-
-def _bytes_to_tensor(data: bytes) -> torch.Tensor:
-    """Unpacks bytes to torch.tensor.bool"""
-    return torch.from_numpy(np.unpackbits(np.frombuffer(data, dtype=np.uint8)))
+from src.ml.util.convert_tensors import bytes_to_bool_tensor
 
 
 class EtherBits(Dataset):
