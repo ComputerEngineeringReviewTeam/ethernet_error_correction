@@ -21,7 +21,7 @@ using bytesVec = std::vector<byte>;
 using symbol10 = std::uint16_t;
 
 int main() {
-    auto testFrames = readFrames("data/raw/capture1.txt");
+    auto testFrames = readFrames("../data/raw/capture1.txt");
     // std::string prepFile = "../data/prep/capture_test.dat";
 
     // std::ofstream prepStream(prepFile, std::ios::binary);
@@ -40,6 +40,8 @@ int main() {
         //     prepStream.write((char*)bytes.data(), bytes.size());
         //     written++;
         // }
+        if (f.size() > 100)
+            continue;
         if (sizes.find(f.size()) == sizes.end()) {
             sizes[f.size()] = 1;
         } else {
