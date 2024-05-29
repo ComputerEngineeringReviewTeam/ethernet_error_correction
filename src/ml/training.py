@@ -21,10 +21,30 @@ model = Network()
 
 loss_fn = nn.MSELoss(reduction='mean')
 
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-
 trainingManager = Trainer(model, loss_fn, 1E-3, trainLoader, testLoader, device)
 
-trainingManager.train(1)
+while True:
+    command = input("Next command: ")
 
-trainingManager.test()
+    if command == 'train':
+        epochs = int(input("Number of epochs: "))
+        trainingManager.train(epochs)
+
+    if command == 'test':
+        trainingManager.test()
+
+    if command == 'quit':
+        break
+
+    if command == 'save':
+        path = input("Path: ")
+        trainingManager.saveModel(path)
+
+    if command == 'load':
+        path = input("Path: ")
+        trainingManager.loadModel(path)
+
+    if command == 'learning_rate':
+        rate = float(input("Rate: "))
+        trainingManager.setLearningRate(rate)
+

@@ -34,6 +34,15 @@ class Trainer:
     def setTrainLoader(self, train_loader):
         self.train_loader = train_loader
 
+    def setTestLoader(self, test_loader):
+        self.test_loader = test_loader
+
+    def saveModel(self, model_path):
+        torch.save(self.model.state_dict(), "models/"+model_path+".model")
+
+    def loadModel(self, model_path):
+        self.model.load_state_dict(torch.load("models/"+model_path+".model"))
+
     def train(self, epochs):
         for epoch in range(epochs):
             enumerate = 0

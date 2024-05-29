@@ -36,6 +36,7 @@
       - EtherBytes.py - tensor of bytes (as torch.tensor.uint8)
       - funcs.py - some functions for converting from binary into torch.tensor
     - util - various utilities
+    - models - saved neural network models
     - trainer.py - simple class that takes and trains torch.Module
     - test_datasets.py - simple testing for data loading, MOVE OUT / REMOVE
     - network.py - neural network class
