@@ -24,8 +24,8 @@ class EtherBits(Dataset):
             filepath = directory + 'capture_test.dat'
             xorpath = directory + 'capture_test_xor.dat'
         else:
-            filepath = directory + 'big.dat'
-            xorpath = directory + 'big_xor.dat'
+            filepath = directory + 'capture.dat'
+            xorpath = directory + 'capture_xor.dat'
         self.frames = []
         self.xors = []
         with open(filepath, "rb") as f:

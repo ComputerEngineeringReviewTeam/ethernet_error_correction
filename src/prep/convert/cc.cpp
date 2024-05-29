@@ -48,7 +48,7 @@ int main()
     // === TESTING DATASET ===
     std::string dataTestFile = testDirPath + filename + binaryExt;                      // .dat binary file with encoded testing frames with errors
     std::string xorTestFile = testDirPath + filename + xorLabel + binaryExt;            // .dat binary file with error vectors for testing
-    std::string errDescTestFile = testDirPath + filename + errDescLabel + binaryExt;    // .csv file with error classes for testing
+    std::string errDescTestFile = testDirPath + filename + errDescLabel + csvExt;       // .csv file with error classes for testing
     std::string ogTestFile = testDirPath + filename + ogLabel + binaryExt;              // .dat binary file with original frames
 
     std::ifstream ifile(wiresharkFile);

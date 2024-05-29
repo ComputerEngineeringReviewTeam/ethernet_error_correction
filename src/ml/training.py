@@ -4,7 +4,8 @@ from torch.utils.data import DataLoader
 
 from src.ml.datasets.EtherBits import EtherBits
 
-from src.ml.modules.network import Network
+from modules.network import Network
+from trainer import Trainer
 
 path = "../../"
 
@@ -22,37 +23,31 @@ model = Network()
 
 loss_fn = nn.MSELoss(reduction='mean')
 
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-model.train()
-for epoch in range(2):
-    for i, (x, y) in enumerate(trainLoader):
-        x, y = x.to(device), y.to(device)
+trainingManager = Trainer(model, loss_fn, 1E-3, trainLoader, testLoader, device)
 
-        predictions = model(x.to(torch.float32))
-        loss = loss_fn(predictions, y.to(torch.float32))
+while True:
+    command = input("Next command: ")
 
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+    if command == 'train':
+        epochs = int(input("Number of epochs: "))
+        trainingManager.train(epochs)
 
-        print(f'Epoch: {epoch} - batch: {i}, Loss: {loss.item()}')
-print("Training finished")
+    if command == 'test':
+        trainingManager.test()
 
-test_loss, correct = 0, 0
-bits = 0
-model.eval()
-with torch.no_grad():
-    for x, y in testLoader:
-        x, y = x.to(device), y.to(device)
-        pred = model(x.to(torch.float32))
-        yf = y.to(torch.float32)
-        diff = torch.count_nonzero((pred * 2).to(torch.uint8).to(torch.bool) ^ y, dim=0)
-        bits += torch.sum(diff).item()
-        test_loss += loss_fn(pred, yf).item()
-        correct += (pred.equal(yf))
+    if command == 'quit':
+        break
+
+    if command == 'save':
+        path = input("Path: ")
+        trainingManager.saveModel(path)
+
+    if command == 'load':
+        path = input("Path: ")
+        trainingManager.loadModel(path)
 
 
+    if command == 'learning_rate':
+        rate = float(input("Rate: "))
+        trainingManager.setLearningRate(rate)
 
-print(correct / len(testLoader.dataset))
-print(test_loss / len(testLoader))
-print(bits / (len(testLoader)  * 1518 * 8))
