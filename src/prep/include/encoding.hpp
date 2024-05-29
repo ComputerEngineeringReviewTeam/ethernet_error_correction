@@ -10,9 +10,10 @@
 #include "encodingtables.hpp"
 #include "constants.hpp"
 
-using byte = std::uint8_t;
-using bytesVec = std::vector<byte>;
-using symbol10 = std::uint16_t;
+using byte = std::uint8_t;                  // 8-bit byte
+using bytesVec = std::vector<byte>;         // vector of bytes
+using symbol10 = std::uint16_t;             // 10-bit symbol - stored on younger 10 bits of uint16_t
+using symbolVec = std::vector<symbol10>;    // vector of 10-bit symbols
 
 namespace encodings {
     /**
@@ -99,6 +100,14 @@ namespace encodings {
     bytesVec encodeBytesVec8b10b(const bytesVec& data);
 
     /**
+     * @brief Encodes vector of bytes using the 8b/10b encoding
+     * 
+     * @param data       vector of bytes to encode
+     * @return symbolVec result vector of 10-bit symbols  from the encoding
+     */
+    symbolVec encode8b10b(const bytesVec& data);
+
+    /**
      * @brief Decodes 10bit symbol to 8bit symbol
      * @details Decodes 10bit symbol to 8bit symbol, using 5b/6b and 3b/4b decodings
      *          See https://en.wikipedia.org/wiki/8b/10b_encoding for more detailed explanation of the algorithm
@@ -127,4 +136,12 @@ namespace encodings {
      * @return bytesVec decoded vector of bytes
      */
     bytesVec decodeBytesVec10b8b(const bytesVec& data);
+
+    /**
+     * @brief Decode vector of 10-bit symbols to vector of bytes, using the 8b/10b encoding
+     * 
+     * @param data      vector of 10-bit symbols endoded in 8b/10b 
+     * @return bytesVec decoded vector of bytes
+     */
+    bytesVec decode8b10b(const symbolVec& data);
 };

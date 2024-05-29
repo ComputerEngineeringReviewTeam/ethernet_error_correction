@@ -21,33 +21,44 @@ using bytesVec = std::vector<byte>;
 using symbol10 = std::uint16_t;
 
 int main() {
-    auto testFrames = readFrames("../data/raw/capture_test.txt");
-    std::string prepFile = "../data/prep/capture_test.dat";
+    auto testFrames = readFrames("data/raw/capture1.txt");
+    // std::string prepFile = "../data/prep/capture_test.dat";
 
-    std::ofstream prepStream(prepFile, std::ios::binary);
-    if (!prepStream.is_open()) {
-        std::cerr << "Error: could not open file " << prepFile << std::endl;
-        return 1;
-    }
-    int written = 0;
+    // std::ofstream prepStream(prepFile, std::ios::binary);
+    // if (!prepStream.is_open()) {
+    //     std::cerr << "Error: could not open file " << prepFile << std::endl;
+    //     return 1;
+    // }
+    //int written = 0;
+    std::unordered_map<int, int> sizes(100);
     for (auto f : testFrames) {
         std::uint16_t type = (f[ETH2_TYPE_OFFSET] << BYTE_SIZE) + f[ETH2_TYPE_OFFSET + 1];
-        if (type == ETH2_TYPE_IP4) {
-            auto bytes = rightPadBytesVec(f, ETH2_MAX_FRAME_SIZE, 0);
-            prepStream.write((char*)bytes.data(), bytes.size());
-            written++;
+        if (type != ETH2_TYPE_IP4) {
+            continue;
+        }
+        //     auto bytes = rightPadBytesVec(f, ETH2_MAX_FRAME_SIZE, 0);
+        //     prepStream.write((char*)bytes.data(), bytes.size());
+        //     written++;
+        // }
+        if (sizes.find(f.size()) == sizes.end()) {
+            sizes[f.size()] = 1;
+        } else {
+            sizes[f.size()]++;
         }
     }
-    prepStream.close();
-    std::cout << "Written " << written << " frames to " << prepFile << std::endl;
+    for (auto s : sizes) {
+        std::cout << s.first << ": " << s.second << std::endl;
+    }
+    // prepStream.close();
+    // std::cout << "Written " << written << " frames to " << prepFile << std::endl;
 
-    auto prepFrames = readFramesFromBinary(prepFile, ETH2_MAX_FRAME_SIZE);
-    std::cout << "Read " << prepFrames.size() << " frames from " << prepFile << std::endl;
+    // auto prepFrames = readFramesFromBinary(prepFile, ETH2_MAX_FRAME_SIZE);
+    // std::cout << "Read " << prepFrames.size() << " frames from " << prepFile << std::endl;
 
-    std::cout << "Frame[2]: ";
-    printBytesVec(testFrames[2]);
-    std::cout << "Frame[2]: ";
-    printBytesVec(prepFrames[2]);
+    // std::cout << "Frame[2]: ";
+    // printBytesVec(testFrames[2]);
+    // std::cout << "Frame[2]: ";
+    // printBytesVec(prepFrames[2]);
 
 
 
