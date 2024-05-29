@@ -2,8 +2,13 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 
+<<<<<<< new-datasets
+from util.trainer import Trainer
+from src.ml.datasets.EtherBits import EtherBits
+=======
 from src.ml.trainer import Trainer
 from datasets.EtherBits import EtherBits
+>>>>>>> master
 
 training_data = EtherBits(
     directory="../../",

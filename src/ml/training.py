@@ -2,9 +2,9 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 
-from datasets.EtherBits import EtherBits
+from src.ml.datasets.EtherBits import EtherBits
 
-from network import Network
+from modules.network import Network
 from trainer import Trainer
 
 path = "../../"
@@ -13,9 +13,11 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 trainSet = EtherBits(path, train=True, frame_size=1518, smallDataset=True)
 testSet = EtherBits(path, train=False, frame_size=1518, smallDataset=True)
-
-trainLoader = DataLoader(trainSet, batch_size=5, shuffle=True)
-testLoader = DataLoader(testSet, batch_size=5, shuffle=True)
+batch = 5000
+print(len(trainSet))
+print(len(testSet))
+trainLoader = DataLoader(trainSet, batch_size=batch, shuffle=False)
+testLoader = DataLoader(testSet, batch_size=batch, shuffle=False)
 
 model = Network()
 
@@ -43,6 +45,7 @@ while True:
     if command == 'load':
         path = input("Path: ")
         trainingManager.loadModel(path)
+
 
     if command == 'learning_rate':
         rate = float(input("Rate: "))

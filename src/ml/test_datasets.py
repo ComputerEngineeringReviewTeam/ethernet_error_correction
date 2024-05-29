@@ -1,12 +1,12 @@
 import torch
 from torch.utils.data import DataLoader
 
-from datasets.EtherBits import EtherBits
+from src.ml.datasets.EtherBits import EtherBits
 from datasets.EtherBytes import EtherBytes
 
 path = "../../"
 
-bits = EtherBits(path, train=True, frame_size=1518, smallDataset=True)
+bits = EtherBits_NEW(path, train=True, frame_size=1518, smallDataset=True)
 byts = EtherBytes(path, train=False, frame_size=1518, smallDataset=True)
 
 print("\tBits - frame[0]")
