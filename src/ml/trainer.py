@@ -67,13 +67,21 @@ class Trainer:
         self.model.eval()
         sampleCount = 0
         correctCount = 0
+        frameCount = 0
+        correctFrameCount = 0
         with torch.no_grad():
             for x, y in self.test_loader:
                 x, y = x.to(self.device), y.to(self.device)
                 predictions = self.model(x.to(torch.float32))
                 predictions = convert_tensors.round_float_to_bool_tensor(predictions)
                 sampleCount += predictions.size(0)*predictions.size(1)
-                correctCount += torch.count_nonzero(predictions == y)
+                comp = predictions == y
+                correctCount += torch.count_nonzero(comp)
+                comp = torch.logical_not(comp)
+                frameCount += predictions.size(0)
+                comp = torch.sum(comp, 1)
+                correctFrameCount += predictions.size(0)-torch.count_nonzero(comp)
 
-        print(f'Model correctly fixed {correctCount} bits out of {sampleCount}')
 
+        print(f'Model correctly predicted {correctCount} bits out of {sampleCount}')
+        print(f'Model correctly predicted {correctFrameCount} frames out of {frameCount}')
