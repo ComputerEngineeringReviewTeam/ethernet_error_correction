@@ -24,8 +24,8 @@ const int ETH2_CRC_BACK_OFFSET = 4;
 
 const int IP4_HEADER_SIZE = 20;
 const int IP4_ADDR_SIZE = 4;
-const int IP4_SRC_ADDR_OFFSET = 12;
-const int IP4_DST_ADDR_OFFSET = 16;
+const int IP4_SRC_ADDR_OFFSET = 14;
+const int IP4_DST_ADDR_OFFSET = 18;
 
 const std::uint16_t ETH2_TYPE_IP4 = 0x0800;
 const std::uint16_t ETH2_TYPE_IP6 = 0x08dd;
