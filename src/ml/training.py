@@ -23,14 +23,14 @@ model = Network()
 
 loss_fn = nn.MSELoss(reduction='mean')
 
-trainingManager = Trainer(model, loss_fn, 1E-3, trainLoader, testLoader, device)
+trainingManager = Trainer(model, loss_fn, 1E-3, trainLoader, testLoader, device, lambda learning_rate, modelL: torch.optim.Adamax(modelL.parameters(), lr=learning_rate))
 
 while True:
     command = input("Next command: ")
 
     if command == 'train':
         epochs = int(input("Number of epochs: "))
-        trainingManager.train(epochs)
+        trainingManager.train(epochs, 3)
 
     if command == 'test':
         trainingManager.test()
@@ -45,7 +45,6 @@ while True:
     if command == 'load':
         path = input("Path: ")
         trainingManager.loadModel(path)
-
 
     if command == 'learning_rate':
         rate = float(input("Rate: "))
