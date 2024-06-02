@@ -6,10 +6,7 @@
 #include "../include/transerrors.hpp"
 #include "../include/frame.hpp"
 
-using byte = std::uint8_t;
-using bytesVec = std::vector<byte>;
-using symbol10 = std::uint16_t;
-using symbolVec = std::vector<symbol10>;
+
 
 const int allToTestRatio = 6;
 
