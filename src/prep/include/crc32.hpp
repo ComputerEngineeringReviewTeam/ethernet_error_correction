@@ -8,9 +8,6 @@
 
 #include "constants.hpp"
 
-using byte = std::uint8_t;
-using bytesVec = std::vector<byte>;
-
 namespace crc32 {
     /**
      * @brief Generates CRC32 reference table, credit to https://github.com/timepp

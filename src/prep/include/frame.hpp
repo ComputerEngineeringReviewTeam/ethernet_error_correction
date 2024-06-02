@@ -13,12 +13,6 @@
 
 #include "constants.hpp"
 
-using byte = std::uint8_t;
-using bytesVec = std::vector<byte>;
-using symbol10 = std::uint16_t;
-
-
-
 
 /**
  * @brief Creates bytesVec with 6 random bytes, immulating MAC address
@@ -94,6 +88,14 @@ bytesVec randomizeMAC(const bytesVec& frame, int mode);
  */
 std::vector<bytesVec> readFramesFromBinary(std::string filename, int frameSize);
 
+/**
+ * @brief Get the Ether Type of the Ethernet II frame (given as bytesVec) as std::uint32_t
+ * 
+ * @param frame Ethernet II frame as vector of bytes
+ * @return std::uint32_t EtherType of the Ethernet II frame
+ */
+std::uint32_t getEtherType(const bytesVec& frame);
+
 // IPv4
 
 /**
@@ -106,3 +108,4 @@ std::vector<bytesVec> readFramesFromBinary(std::string filename, int frameSize);
  * @return bytesVec Ethernet II frame with randomized IPv4 addresses
  */
 bytesVec randomizeIPv4Addr(const bytesVec& frame, int mode);
+

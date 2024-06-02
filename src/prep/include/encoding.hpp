@@ -10,11 +10,6 @@
 #include "encodingtables.hpp"
 #include "constants.hpp"
 
-using byte = std::uint8_t;                  // 8-bit byte
-using bytesVec = std::vector<byte>;         // vector of bytes
-using symbol10 = std::uint16_t;             // 10-bit symbol - stored on younger 10 bits of uint16_t
-using symbolVec = std::vector<symbol10>;    // vector of 10-bit symbols
-
 namespace encodings {
     /**
      * @brief Bit mask to extract the younger 5 bits from byte
