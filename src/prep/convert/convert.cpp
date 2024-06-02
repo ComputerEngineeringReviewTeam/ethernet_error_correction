@@ -13,6 +13,10 @@ using symbolVec = std::vector<symbol10>;
 
 const int allToTestRatio = 6;
 
+const bool splice = true;
+
+const int spliceSize=4;
+
 
 int main()
 {
@@ -123,7 +127,7 @@ int main()
             continue;
         }
 
-        // Remove the first 6 characters - in Wireshark format they are always "|0   " before the actuall frame
+        // Remove the first 6 characters - in Wireshark format they are always "|0   " before the actual frame
         wsline.erase(0, 6);
 
         // Parse a new frame
@@ -152,6 +156,8 @@ int main()
 
         // Calculate and append CRC32 checksum
         crcVec = crc32::toBytesVec(crc32::crc(crcTable, frame));
+
+
         frame.insert(frame.end(), crcVec.begin(), crcVec.end());
 
         // Encode the frame using 8b/10b encoding
@@ -185,12 +191,16 @@ int main()
         // First we detach the CRC32 checksum from the end of the frame (the last 4 bytes)
         bytesVec crcWithErrors(frame.begin() + frame.size() - ETH2_CRC_SIZE, frame.end());
         bytesVec crcGood(xorFrame.begin() + xorFrame.size() - ETH2_CRC_SIZE, xorFrame.end());
-        // Then we add 0s so that the frame is 1514 (ETH2_MAX_FRAME_SIZE - ETH2_CRC_SIZE) bytes long
-        frame = rightPadBytesVec(frame, ETH2_MAX_FRAME_SIZE - ETH2_CRC_SIZE);
-        xorFrame = rightPadBytesVec(xorFrame, ETH2_MAX_FRAME_SIZE - ETH2_CRC_SIZE);
-        // Finally we append the CRC32 checksum to the end of the frame
-        frame.insert(frame.end(), crcWithErrors.begin(), crcWithErrors.end());
-        xorFrame.insert(xorFrame.end(), crcGood.begin(), crcGood.end());
+        if(!splice)
+        {
+            // Then we add 0s so that the frame is 1514 (ETH2_MAX_FRAME_SIZE - ETH2_CRC_SIZE) bytes long
+            frame = rightPadBytesVec(frame, ETH2_MAX_FRAME_SIZE - ETH2_CRC_SIZE);
+            xorFrame = rightPadBytesVec(xorFrame, ETH2_MAX_FRAME_SIZE - ETH2_CRC_SIZE);
+            // Finally we append the CRC32 checksum to the end of the frame
+            frame.insert(frame.end(), crcWithErrors.begin(), crcWithErrors.end());
+            xorFrame.insert(xorFrame.end(), crcGood.begin(), crcGood.end());
+        }
+
 
         //Pointers pointing to the file that will be used to write this frame
         std::ofstream* ofile = nullptr;
@@ -231,27 +241,67 @@ int main()
             info[5]++;
         }
 
-        // Write the new frame (with errors) to the output file
-        ofile->write((char *)frame.data(), frame.size());
-        if (ofile->fail())
+        if(!splice)
         {
-            std::cout << "Error: writing to file: " << dataFile << " failed on frame " << info[3] << std::endl;
-            return 1;
-        }
+            // Write the new frame (with errors) to the output file
+            ofile->write((char *)frame.data(), frame.size());
+            if (ofile->fail())
+            {
+                std::cout << "Error: writing to file: " << dataFile << " failed on frame " << info[3] << std::endl;
+                return 1;
+            }
 
-        // Perform byte-wise XOR operation on the error-free frame copy and the frame with errors
-        // Thus we get the error vector, which will be used for error detection
-        for (int i = 0; i < frame.size(); i++)
-        {
-            xorFrame[i] = xorFrame[i] ^ frame[i];
-        }
+            // Perform byte-wise XOR operation on the error-free frame copy and the frame with errors
+            // Thus we get the error vector, which will be used for error detection
+            for (int i = 0; i < frame.size(); i++)
+            {
+                xorFrame[i] = xorFrame[i] ^ frame[i];
+            }
 
-        // Write the error vector to the output file
-        ofileXor->write((char *)xorFrame.data(), xorFrame.size());
-        if (ofileXor->fail())
+            // Write the error vector to the output file
+            ofileXor->write((char *)xorFrame.data(), xorFrame.size());
+            if (ofileXor->fail())
+            {
+                std::cout << "Error: writing to file: " << xorFile << " failed on xor-frame " << info[3] << std::endl;
+                return 1;
+            }
+        }
+        else
         {
-            std::cout << "Error: writing to file: " << xorFile << " failed on xor-frame " << info[3] << std::endl;
-            return 1;
+            int i = 0;
+            while(i<frame.size())
+            {
+                bytesVec frameFragment;
+                bytesVec errorFragment;
+                for(int j=0;j<spliceSize;j++)
+                {
+                    if(i<frame.size())
+                    {
+                        frameFragment.push_back(frame[i]);
+                        errorFragment.push_back(frame[i]^xorFrame[i]);
+                        i++;
+                    }
+                    else
+                    {
+                        frameFragment.push_back(0);
+                        errorFragment.push_back(0);
+                    }
+                }
+                ofile->write((char *)frameFragment.data(), frameFragment.size());
+                if (ofile->fail())
+                {
+                    std::cout << "Error: writing to file: " << dataFile << " failed on frame " << info[3] << std::endl;
+                    return 1;
+                }
+
+                // Write the error vector to the output file
+                ofileXor->write((char *)errorFragment.data(), errorFragment.size());
+                if (ofileXor->fail())
+                {
+                    std::cout << "Error: writing to file: " << xorFile << " failed on xor-frame " << info[3] << std::endl;
+                    return 1;
+                }
+            }
         }
 
         // Write the error class (errorsPosMap) of the frame to the errDescription file
