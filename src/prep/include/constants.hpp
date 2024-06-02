@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <vector>
 
 const int BYTE_SIZE = 8;
 const int BYTE_MAX = 256;
