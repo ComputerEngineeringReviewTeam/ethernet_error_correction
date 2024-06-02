@@ -11,8 +11,8 @@ path = "../../"
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-trainSet = EtherBits(path, train=True, frame_size=1518, smallDataset=True)
-testSet = EtherBits(path, train=False, frame_size=1518, smallDataset=True)
+trainSet = EtherBits(path, train=True, frame_size=1518, smallDataset=False)
+testSet = EtherBits(path, train=False, frame_size=1518, smallDataset=False)
 batch = 5000
 print(len(trainSet))
 print(len(testSet))
