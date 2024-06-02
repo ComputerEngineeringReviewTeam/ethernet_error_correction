@@ -96,6 +96,10 @@ std::vector<bytesVec> readFramesFromBinary(std::string filename, int frameSize) 
     return frames;
 }
 
+std::uint32_t getEtherType(const bytesVec& frame) {
+    return (frame[ETH2_TYPE_OFFSET] << 8) + frame[ETH2_TYPE_OFFSET + 1];
+}
+
 // IPv4
 
 bytesVec randomizeIPv4Addr(const bytesVec& frame, int mode) {
