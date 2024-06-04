@@ -3,7 +3,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 from src.ml.trainer import Trainer
-from src.ml.datasets.EtherBits import EtherBits
+from src.ml.datasets.etherbits import EtherBits
 
 training_data = EtherBits(
     directory="../../",

@@ -1,13 +1,12 @@
-import torch
 from torch.utils.data import DataLoader
 
-from src.ml.datasets.EtherBits import EtherBits
-from datasets.EtherBytes import EtherBytes
+from src.ml.datasets.etherbits import *
+from src.ml.datasets.etherbytes import *
 
-path = "../../"
+path = "../../data/prep/"
 
-bits = EtherBits_NEW(path, train=True, frame_size=1518, smallDataset=True)
-byts = EtherBytes(path, train=False, frame_size=1518, smallDataset=True)
+bits = EtherBitsXor(path, "f100", train=True, frame_size=100)
+byts = EtherBytesXor(path, "f100", train=True, frame_size=100)
 
 print("\tBits - frame[0]")
 print(bits[0][0][:8], end=" ")
