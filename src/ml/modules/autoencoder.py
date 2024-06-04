@@ -1,19 +1,28 @@
 import torch.nn as nn
-import torch.nn.functional as F
+
 
 class Autoencoder(nn.Module):
-    def __init__(self, input_size, encoding_dim):
+    def __init__(self):
         super(Autoencoder, self).__init__()
+
         self.encoder = nn.Sequential(
-            nn.Linear(input_size, 16),
+            nn.Linear(800, 400),
             nn.ReLU(),
-            nn.Linear(16, encoding_dim),
+            nn.Linear(400, 200),
+            nn.ReLU(),
+            nn.Linear(200, 100),
+            nn.ReLU(),
+            nn.Linear(100, 100),
             nn.ReLU()
         )
         self.decoder = nn.Sequential(
-            nn.Linear(encoding_dim, 16),
+            nn.Linear(100, 100),
             nn.ReLU(),
-            nn.Linear(16, input_size),
+            nn.Linear(100, 200),
+            nn.ReLU(),
+            nn.Linear(200, 400),
+            nn.ReLU(),
+            nn.Linear(400, 800),
             nn.Sigmoid()
         )
 
