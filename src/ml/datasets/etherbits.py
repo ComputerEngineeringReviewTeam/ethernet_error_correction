@@ -1,47 +1,29 @@
-from typing import Tuple
+"""
+Various datasets of Ethernet II frames, expressed as tensors of singular bits (bool), extending torch.utils.data.Dataset
 
-import numpy as np
+Author: Marek Szymański
+"""
+
+from typing import Tuple
 import torch
 from torch.utils.data import Dataset
 
 from src.ml.util.convert_tensors import bytes_to_bool_tensor
 
 
+DATA_FILE_EXTENSION = '.dat'
+DESC_FILE_EXTENSION = '.csv'
+
+CLEAN_FRAMES_TAG = "_og"
+ERROR_FRAMES_TAG = ""
+XOR_FRAMES_TAG = "_xor"
+DESC_FILE_TAG = "_errDesc"
+
+TRAIN_DIR = "train/"
+TEST_DIR = "test/"
+
+
 class EtherBits(Dataset):
-    """
-    Dataset of Ethernet II frames encoded with 8b/10b encoding.
-    Each frame is converted into a torch.tensor of bits
-    """
-    def __init__(self, directory: str, train: bool, frame_size: int = 1518, smallDataset: bool = False):
-        if train:
-            directory = directory + 'data/prep/train/'
-        else:
-            directory = directory + 'data/prep/test/'
-        if smallDataset:
-            filepath = directory + 'capture_test.dat'
-            xorpath = directory + 'capture_test_xor.dat'
-        else:
-            filepath = directory + 'capture.dat'
-            xorpath = directory + 'capture_xor.dat'
-        self.frames = []
-        self.xors = []
-        with open(filepath, "rb") as f:
-            while frame_bytes := f.read(frame_size):
-                ndarray = np.frombuffer(frame_bytes, dtype=np.uint8)
-                self.frames.append(torch.from_numpy(np.unpackbits(ndarray)))
-        with open(xorpath, "rb") as f:
-            while frame_bytes := f.read(frame_size):
-                ndarray = np.frombuffer(frame_bytes, dtype=np.uint8)
-                self.xors.append(torch.from_numpy(np.unpackbits(ndarray)))
-
-    def __len__(self):
-        return len(self.frames)
-
-    def __getitem__(self, idx):
-        return self.frames[idx], self.xors[idx]
-
-
-class EtherBits_NEW(Dataset):
     """
     Base class for the EtherBits datasets.
     Implements loading Ethernet II frames from binary file and converting them to torch.tensor.bool.
@@ -52,10 +34,10 @@ class EtherBits_NEW(Dataset):
         self.ys = []
         with open(x_path, "rb") as f:
             while frame_bytes := f.read(frame_size):
-                self.xs.append(_bytes_to_tensor(frame_bytes))
+                self.xs.append(bytes_to_bool_tensor(frame_bytes))
         with open(y_path, "rb") as f:
             while frame_bytes := f.read(frame_size):
-                self.ys.append(_bytes_to_tensor(frame_bytes))
+                self.ys.append(bytes_to_bool_tensor(frame_bytes))
 
     def __len__(self) -> int:
         return len(self.xs)
@@ -64,33 +46,33 @@ class EtherBits_NEW(Dataset):
         return self.xs[idx], self.ys[idx]
 
 
-class EtherBitsXor(EtherBits_NEW):
+class EtherBitsXor(EtherBits):
     """
-    EterhBits dataset containing:
+    EtherBits dataset containing:
         - [0] frames with errors
         - [1] xors of the frames with errors and error-free ones (i.e. 1s only on bits with errors)
     """
     def __init__(self, data_dir: str, filename: str, frame_size: int = 1518, train: bool = True):
-        dir_path = data_dir + "train/" if train else data_dir + "test/"
-        x_path = dir_path + filename + ".dat"
-        y_path = dir_path + filename + "_xor.dat"
+        dir_path = data_dir + TRAIN_DIR if train else data_dir + TEST_DIR
+        x_path = dir_path + filename + ERROR_FRAMES_TAG + DATA_FILE_EXTENSION
+        y_path = dir_path + filename + XOR_FRAMES_TAG + DATA_FILE_EXTENSION
         super().__init__(x_path, y_path, frame_size)
 
 
-class EtherBitsOg(EtherBits_NEW):
+class EtherBitsOg(EtherBits):
     """
-    EterhBits dataset containing:
+    EtherBits dataset containing:
         - [0] frames with errors
         - [1] error-free frames
     """
     def __init__(self, data_dir: str, filename: str, frame_size: int = 1518, train: bool = True):
-        dir_path = data_dir + "train/" if train else data_dir + "test/"
-        x_path = dir_path + filename + ".dat"
-        y_path = dir_path + filename + "_og.dat"
+        dir_path = data_dir + TRAIN_DIR if train else data_dir + TEST_DIR
+        x_path = dir_path + filename + ERROR_FRAMES_TAG + DATA_FILE_EXTENSION
+        y_path = dir_path + filename + CLEAN_FRAMES_TAG + DATA_FILE_EXTENSION
         super().__init__(x_path, y_path, frame_size)
 
 
-class EtherBitsH_NEW(Dataset):
+class EtherBitsH(Dataset):
     """
     Base class for the homogenous EtherBits datasets.
     Implements loading Ethernet II frames from binary file and converting them to torch.tensor.bool.
@@ -101,7 +83,7 @@ class EtherBitsH_NEW(Dataset):
         self.data = []
         with open(data_path, "rb") as f:
             while frame_bytes := f.read(frame_size):
-                self.data.append(_bytes_to_tensor(frame_bytes))
+                self.data.append(bytes_to_bool_tensor(frame_bytes))
 
     def __len__(self) -> int:
         return len(self.data)
@@ -110,34 +92,34 @@ class EtherBitsH_NEW(Dataset):
         return self.data[idx], self.data[idx]
 
 
-class EtherBitsHXor(EtherBitsH_NEW):
+class EtherBitsHXor(EtherBitsH):
     """
-    EterhBits homogenous dataset containing:
+    EtherBits homogenous dataset containing:
         - [0] and [1] xors of the frames with errors and error-free ones (i.e. 1s only on bits with errors)
     """
     def __init__(self, data_dir: str, filename: str, frame_size: int = 1518, train: bool = True):
-        dir_path = data_dir + "train/" if train else data_dir + "test/"
-        x_path = dir_path + filename + "_xor.dat"
+        dir_path = data_dir + TRAIN_DIR if train else data_dir + TEST_DIR
+        x_path = dir_path + filename + XOR_FRAMES_TAG + DATA_FILE_EXTENSION
         super().__init__(x_path, frame_size)
 
 
-class EtherBitsHOg(EtherBitsH_NEW):
+class EtherBitsHOg(EtherBitsH):
     """
-    EterhBits homogenous dataset containing:
+    EtherBits homogenous dataset containing:
         - [0] and [1] error-free frames
     """
     def __init__(self, data_dir: str, filename: str, frame_size: int = 1518, train: bool = True):
-        dir_path = data_dir + "train/" if train else data_dir + "test/"
-        x_path = dir_path + filename + "_og.dat"
+        dir_path = data_dir + TRAIN_DIR if train else data_dir + TEST_DIR
+        x_path = dir_path + filename + CLEAN_FRAMES_TAG + DATA_FILE_EXTENSION
         super().__init__(x_path, frame_size)
 
 
-class EtherBitsHErr(EtherBitsH_NEW):
+class EtherBitsHErr(EtherBitsH):
     """
-    EterhBits homogenous dataset containing:
+    EtherBits homogenous dataset containing:
         - [0] and [1] frames with errors
     """
     def __init__(self, data_dir: str, filename: str, frame_size: int = 1518, train: bool = True):
-        dir_path = data_dir + "train/" if train else data_dir + "test/"
-        x_path = dir_path + filename + ".dat"
+        dir_path = data_dir + TRAIN_DIR if train else data_dir + TEST_DIR
+        x_path = dir_path + filename + ERROR_FRAMES_TAG + DATA_FILE_EXTENSION
         super().__init__(x_path, frame_size)
