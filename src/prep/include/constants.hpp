@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <vector>
 
 const int BYTE_SIZE = 8;
 const int BYTE_MAX = 256;
@@ -35,3 +36,8 @@ const int ETH2_ENC_SRC_MAC_BIT_OFFSET = 60;
 const int ETH2_ENC_DST_MAC_BIT_OFFSET = 0;
 const int ETH2_ENC_CRC_BIT_SIZE = 20;
 const int ETH2_ENC_TYPE_BIT_OFFSET = 120;
+
+using byte = std::uint8_t;                  // 8-bit byte
+using bytesVec = std::vector<byte>;         // vector of bytes
+using symbol10 = std::uint16_t;             // 10-bit symbol - stored on younger 10 bits of uint16_t
+using symbolVec = std::vector<symbol10>;    // vector of 10-bit symbols

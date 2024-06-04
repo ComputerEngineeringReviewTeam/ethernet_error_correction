@@ -12,11 +12,6 @@
 
 #include "constants.hpp"
 
-using byte = std::uint8_t;
-using bytesVec = std::vector<byte>;
-using symbol10 = std::uint16_t;
-using symbolVec = std::vector<symbol10>;
-
 const std::unordered_map<std::string, int> FIELDS_TEMPLATE_MAP = {
     {"DestMAC", 0},
     {"SourceMAC", 0},
