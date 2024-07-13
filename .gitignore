@@ -9,3 +9,4 @@
 /data/*.txt
 /data/*.csv
 /src/ml/models/*
+/data

@@ -42,11 +42,13 @@ int main() {
         // }
         if (f.size() > 100)
             continue;
-        if (sizes.find(f.size()) == sizes.end()) {
-            sizes[f.size()] = 1;
-        } else {
-            sizes[f.size()]++;
-        }
+
+        printBytesVec(f);
+        f = randomizeMAC(f, 2);
+        printBytesVec(f);
+        f = randomizeIPv4Addr(f, 2);
+        printBytesVec(f);
+        break;
     }
     for (auto s : sizes) {
         std::cout << s.first << ": " << s.second << std::endl;

@@ -15,12 +15,12 @@ const int allToTestRatio = 6;
 
 const bool splice = true;
 
-const int spliceSize=4;
+const int spliceSize=100;
 
 
 int main()
 {
-    std::string filename = "big";
+    std::string filename = "s100";
 
     std::string trainDirPath = "../data/prep/train/";
     std::string testDirPath = "../data/prep/test/";
@@ -199,6 +199,11 @@ int main()
             // Finally we append the CRC32 checksum to the end of the frame
             frame.insert(frame.end(), crcWithErrors.begin(), crcWithErrors.end());
             xorFrame.insert(xorFrame.end(), crcGood.begin(), crcGood.end());
+        } else {
+            if (frame.size() < spliceSize) {
+                frame = rightPadBytesVec(frame, spliceSize);
+                xorFrame = rightPadBytesVec(xorFrame, spliceSize);
+            }
         }
 
 

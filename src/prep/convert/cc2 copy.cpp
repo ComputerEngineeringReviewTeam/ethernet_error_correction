@@ -15,15 +15,15 @@ const int allToTestRatio = 6;
 int main()
 {
     // === CONTROLS ===
-    std::string filename = "f1518";                                                        // Filename of the output files
+    std::string filename = "f100";                                                        // Filename of the output files
     int allToTestRatio = 6;                                                             // Ratio of all frames to be assigned to test data
-    int maxFrameSize = 1518;                                                            // Maximum size of the frame we want to process
+    int maxFrameSize = 100;                                                            // Maximum size of the frame we want to process
     bool toXOR = true;                                                                  // Write error vectors to the output file
     bool toErrDesc = true;                                                              // Write error descriptions to the output file
     bool toOg = true;                                                                   // Write original frames to the output file
     std::uint16_t etherType = ETH2_TYPE_IP4;                                            // Ethernet II type of the frames we want to process
     std::string wiresharkFile = "../data/raw/capture1.txt";                         // .txt file with Wireshark capture
-    FileSaver fs("../data/", "capture1.txt", "f1500");
+    FileSaver fs("../data/", "capture1.txt", "f100");
 
     // === variables ===
     std::string wsline;
@@ -49,7 +49,6 @@ int main()
     std::vector<double> errors = {1.0, 0.1};
     std::mt19937 gen;
     std::uniform_int_distribution<int> dist(0, allToTestRatio-1);
-    bool fst = true;
 
     // Open the source file and output files
     if (!fs.openFiles())
@@ -156,15 +155,7 @@ int main()
                 break;
             }
         }
-        if (!erred && fst) {
-            printBytesVec(frame);
-            printBytesVec(ogFrame);
-            printBytesVec(xorFrame);
-            for (auto const& x : errorsPos) {
-                std::cout << x << " ";
-            }
-            fst = false;
-        }
+        
 
         // Write the frames and desc to the output files, exits if failed
         if (!fs.write(ogFrame, frame, xorFrame, errorsPosMap, train)) {
