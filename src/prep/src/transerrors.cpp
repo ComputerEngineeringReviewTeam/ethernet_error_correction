@@ -1,3 +1,6 @@
+// Author: Marek Szymański
+// Description: Flipping bits in the fields of a 8b/10b encoded Ethernet II frame
+
 #include "../include/transerrors.hpp"
 
 namespace transerrors {

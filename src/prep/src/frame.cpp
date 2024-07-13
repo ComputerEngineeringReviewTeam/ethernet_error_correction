@@ -1,3 +1,6 @@
+// Author: Marek Szymański
+// Description: Operations on Ethernet II frames, reading from file, parsing, padding, printing, writing to binary file
+
 #include "../include/frame.hpp"
 
 bytesVec randomMAC() {

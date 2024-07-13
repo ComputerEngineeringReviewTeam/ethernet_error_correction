@@ -1,3 +1,6 @@
+// Author: Marek Szymański
+// Description: FileSaver class for managing file I/O operations in the project
+
 #include "../include/filesaver.hpp"
 
 bool FileSaver::openFiles() {

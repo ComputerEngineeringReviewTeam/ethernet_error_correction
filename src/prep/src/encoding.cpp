@@ -1,3 +1,6 @@
+// Author: Marek Szymański
+// Description: Encoding and decoding of 8b/10b encoded binary data (as vectors of uint8_t)
+
 #include "../include/encoding.hpp"
 
 namespace encodings {
