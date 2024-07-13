@@ -1,5 +1,6 @@
 // Author: Marek Szymański
 // Description: CRC32 reference table and calculation from vector of uint8_t
+// Credits: https://github.com/timepp for reference table generation
 
 #pragma once
 
@@ -12,7 +13,7 @@ namespace crc32 {
     /**
      * @brief Generates CRC32 reference table, credit to https://github.com/timepp
      * @details Generates a reference table of 256 CRC32 values, used for CRC32 calculation
-     *          Implementation by https://gist.github.com/timepp/1f678e200d9e0f2a043a9ec6b3690635
+     *          Implementation from https://gist.github.com/timepp/1f678e200d9e0f2a043a9ec6b3690635
      *          Only changed type of j to int from size_t
      * 
      * @param table pointer to preallocated array of 256 uint32_t values
