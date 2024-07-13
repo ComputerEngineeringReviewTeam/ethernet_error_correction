@@ -1,3 +1,9 @@
+"""
+Simple Trainer class that trains and evaluates given Module using the given DataLoaders
+
+Author: Mateusz Nurczyński
+"""
+
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
