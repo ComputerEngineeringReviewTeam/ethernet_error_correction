@@ -1,3 +1,6 @@
+// Author: Marek Szymański
+// Description: CRC32 reference table and calculation from vector of uint8_t
+
 #include "../include/crc32.hpp"
 
 namespace crc32 {

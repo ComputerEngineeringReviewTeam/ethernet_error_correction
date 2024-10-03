@@ -1,11 +1,15 @@
-
-/bin/*
-/models
-/.venv
-/.vscode
-/.idea
-**/__pycache__/
+# Data
 /data/*.dat
 /data/*.txt
 /data/*.csv
-/src/ml/models/*
+
+# Tools
+/.vscode
+/.idea
+
+# Python venv and pycache
+/.venv
+**/__pycache__/
+
+# Compiled binaries
+/bin/*

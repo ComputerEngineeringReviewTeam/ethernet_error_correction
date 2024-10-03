@@ -1,3 +1,6 @@
+// Author: Marek Szymański
+// Description: FileSaver class for managing file I/O operations in the project
+
 #pragma once
 
 #include <string>

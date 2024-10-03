@@ -1,3 +1,9 @@
+"""
+Small utility functions for converting between torch tensors or numpy arrays.
+
+Author: Marek Szymański
+"""
+
 import torch
 import numpy as np
 

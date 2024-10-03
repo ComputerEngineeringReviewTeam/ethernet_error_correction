@@ -1,11 +1,20 @@
 """
 Various datasets of Ethernet II frames, expressed as tensors of singular bits (bool), extending torch.utils.data.Dataset
 
+List:
+- EtherBits line:
+  - EtherBitsXor - dataset containing frames with errors in them and xors of them and their error-free versions
+  - EtherBitsOg -  dataset containing frames with errors in them and their error-free versions
+- EtherBitsH line - input and output data are the same:
+  - EtherBitsH- dataset containing frames with errors in them
+  - EtherBitsOg- dataset containing error-free frames
+  - EtherBitsXor - dataset containing frames with errors in them XORed with their error-free versions
+
 Author: Marek Szymański
 """
 
-from typing import Tuple
 import torch
+from typing import Tuple
 from torch.utils.data import Dataset
 
 from src.ml.util.convert_tensors import bytes_to_bool_tensor

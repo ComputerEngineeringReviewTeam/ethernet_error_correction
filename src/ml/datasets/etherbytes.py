@@ -1,6 +1,15 @@
 """
 Various datasets of Ethernet II frames, expressed as tensors of bytes (uint8), extending torch.utils.data.Dataset
 
+List:
+- EtherBytes line:
+  - EtherBytesXor - dataset containing frames with errors in them and xors of them and their error-free versions
+  - EtherBytesOg -  dataset containing frames with errors in them and their error-free versions
+- EtherBytesH line - input and output data are the same:
+  - EtherBytesH- dataset containing frames with errors in them
+  - EtherBytesOg- dataset containing error-free frames
+  - EtherBytesXor - dataset containing frames with errors in them XORed with their error-free versions
+
 Author: Marek Szymański
 """
 

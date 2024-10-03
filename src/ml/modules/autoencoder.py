@@ -1,5 +1,8 @@
-import torch.nn as nn
+"""
+Example of one the auto encoder networks used in the project.
+"""
 
+import torch.nn as nn
 
 class Autoencoder(nn.Module):
     def __init__(self):

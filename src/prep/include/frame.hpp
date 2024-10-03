@@ -15,7 +15,7 @@
 
 
 /**
- * @brief Creates bytesVec with 6 random bytes, immulating MAC address
+ * @brief Creates bytesVec with 6 random bytes, simmulating MAC address
  * 
  * @return bytesVec 
  */
