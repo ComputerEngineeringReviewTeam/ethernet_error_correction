@@ -33,6 +33,7 @@ The project repository is organized as follows:
 - src - actual source code
   - prep - data preprocessing in C++
   - ml - everything related to machine learning - datasets, modules etc
+
 More detailed map [here](docs/navigation.md)
 
 ## STORAGE FORMAT
@@ -40,4 +41,5 @@ Single set of preprocessed frames is stored in the following format:
 - a binary file containing all the preprocessed frames
 - a binary file containing the XORs of all the preprocessed frames before and after the errors were introduced 
 - a CSV file containing the number and position of errors introduced into each frame
+
 More detailed explanation [here](docs/data_format.md)
