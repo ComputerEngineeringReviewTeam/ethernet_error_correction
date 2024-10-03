@@ -27,7 +27,7 @@
       - EtherBytes.py - frames are expressed as tensors of bytes (each as torch.tensor.uint8)
     - util/ - various utilities
     - modules/ - examples of networks used in the projects, for exhaustive more list refer to 
-    [paper](#)
+    [paper](paper.pdf)
     - trainer.py - simple class that takes and trains torch.Module
     - training.py - code for training and assesment of the model using the Trainer class
 - docs/ - project docs
