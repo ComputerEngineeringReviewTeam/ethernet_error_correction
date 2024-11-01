@@ -200,13 +200,13 @@ FileSaver::FileSaver(const std::string& dataDirPath,
               const std::string& exitFileName) {
     sourcePath = dataDirPath + "raw/" + sourceFileName;
 
-    cleanTrainPath = dataDirPath + "prep/train/" + sourceFileName + "_og.dat";
-    errorTrainPath = dataDirPath + "prep/train/" + sourceFileName + ".dat";
-    xorTrainPath = dataDirPath + "prep/train/" + sourceFileName + "_xor.dat";
-    descTrainPath = dataDirPath + "prep/train/" + sourceFileName + "_errDesc.csv";
+    cleanTrainPath = dataDirPath + "prep/train/" + exitFileName + "_og.dat";
+    errorTrainPath = dataDirPath + "prep/train/" + exitFileName + ".dat";
+    xorTrainPath = dataDirPath + "prep/train/" + exitFileName + "_xor.dat";
+    descTrainPath = dataDirPath + "prep/train/" + exitFileName + "_errDesc.csv";
 
-    cleanTestPath = dataDirPath + "prep/test/" + sourceFileName + "_og.dat";
-    errorTestPath = dataDirPath + "prep/test/" + sourceFileName + ".dat";
-    xorTestPath = dataDirPath + "prep/test/" + sourceFileName + "_xor.dat";
-    descTestPath = dataDirPath + "prep/test/" + sourceFileName + "_errDesc.csv";
+    cleanTestPath = dataDirPath + "prep/test/" + exitFileName + "_og.dat";
+    errorTestPath = dataDirPath + "prep/test/" + exitFileName + ".dat";
+    xorTestPath = dataDirPath + "prep/test/" + exitFileName + "_xor.dat";
+    descTestPath = dataDirPath + "prep/test/" + exitFileName + "_errDesc.csv";
 }

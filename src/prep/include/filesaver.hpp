@@ -43,7 +43,7 @@ private:
 
 public:
     /**
-     * @brief Construct a new File Saver object
+     * @brief Construct a new File Saver object with custom directory structure
      * 
      * @param _sourcePath     path to the source file
      * @param _cleanTrainPath path to the clean train file
