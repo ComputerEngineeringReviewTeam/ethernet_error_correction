@@ -11,27 +11,28 @@
 int main()
 {
     // === CONTROLS ===
-    std::string filename = "f1518";                                                        // Filename of the output files
-    int allToTestRatio = 6;                                                             // Ratio of all frames to be assigned to test data
-    int maxFrameSize = 1518;                                                            // Maximum size of the frame we want to process
-    bool toXOR = true;                                                                  // Write error vectors to the output file
-    bool toErrDesc = true;                                                              // Write error descriptions to the output file
-    bool toOg = true;                                                                   // Write original frames to the output file
-    std::uint16_t etherType = ETH2_TYPE_IP4;                                            // Ethernet II type of the frames we want to process
-    std::string wiresharkFile = "../data/raw/capture1.txt";                         // .txt file with Wireshark capture
-    FileSaver fs("../data/", "capture1.txt", "f1500");
+    int allToTestRatio = 6;                                         // Ratio of all frames to be assigned to test data
+    int maxFrameSize = 1518;                                        // Maximum size of the frame we want to process
+    std::uint16_t etherType = ETH2_TYPE_IP4;                        // Ethernet II type of the frames we want to process
+    std::vector<double> errors = {1.0, 0.1};                        // probabilities of bit flip in the frame - first number is the probability of flipping one bit in the frame, 
+                                                                    // second is the probability of flipping another bit and so on
+    FileSaver fs("../data/", "capture1.txt", "f1500");              // FileSaver object to handle file operations, arguments:
+                                                                    // - 1st argument is the path to the data directory
+                                                                    // - 2nd is the name of the source file
+                                                                    // - 3rd is the basic name of the output files (without extension)
 
     // === variables ===
-    std::string wsline;                                 // single line of text from Wireshark file - i.e. raw, unparsed Ethernet II frame
-    bytesVec frame;                                     // main frame as vector of bytes - uint8_t
-    symbolVec encodedFrame;                             // frame encoded with 8b/10b encoding as vector of 10-bit symbols held in uint16_t
-    bytesVec crcVec;                                    // CRC32 checksum of Ethernet II frame as vector of bytes (4 bytes long)
-    std::uint16_t type;                                 // type of an Ethernet II frame - 2 bytes
-    uint32_t crcTable[256];                             // CRC32 lookup table of 256 4-byte (uint32_t) symbols
-    crc32::generate_table(crcTable);                    // lookup table generation by https://github.com/timepp    
-    std::mt19937 gen;                                   // mt19937 generator that will be used to for pseudo-random generation in error generation functions
+    std::string wsline;                                             // single line of text from Wireshark file - i.e. raw, unparsed Ethernet II frame
+    bytesVec frame;                                                 // main frame as vector of bytes - uint8_t
+    symbolVec encodedFrame;                                         // frame encoded with 8b/10b encoding as vector of 10-bit symbols held in uint16_t
+    bytesVec crcVec;                                                // CRC32 checksum of Ethernet II frame as vector of bytes (4 bytes long)
+    std::uint16_t type;                                             // type of an Ethernet II frame - 2 bytes
+    uint32_t crcTable[256];                                         // CRC32 lookup table of 256 4-byte (uint32_t) symbols
+    crc32::generate_table(crcTable);                                // lookup table generation by https://github.com/timepp    
+    std::mt19937 gen;                                               // mt19937 generator that will be used to for pseudo-random generation in error generation functions
     std::uniform_int_distribution<int> dist(0, allToTestRatio-1);   // uniform distribution used to distribute frames to either Train or Test groups
-    int info[] = {0, 0, 0, 0, 0, 0, 0, 0};              
+
+    int info[] = {0, 0, 0, 0, 0, 0, 0};              
     /*
     Info table meaning:
         0 - Total frames read from raw data file.
@@ -41,12 +42,8 @@ int main()
         4 - Total frames assigned to training data.
         5 - Total frames assigned to testing data.
         6 - 'etherType' type frames longer than 'maxFrameSize' bytes
-        7 - Undefined
     */
-    std::vector<double> errors = {1.0, 0.1};
-    std::mt19937 gen;
-    std::uniform_int_distribution<int> dist(0, allToTestRatio-1);
-    bool fst = true;
+
 
     // Open the source file and output files
     if (!fs.openFiles())
@@ -143,26 +140,6 @@ int main()
             xorFrame[i] = xorFrame[i] ^ frame[i];
         }
 
-        bool erred = false;
-        for (int i = 0; i < frame.size(); i++)
-        {
-            if (frame[i] != ogFrame[i])
-            {
-                erred = true;
-                info[7]++;
-                break;
-            }
-        }
-        if (!erred && fst) {
-            printBytesVec(frame);
-            printBytesVec(ogFrame);
-            printBytesVec(xorFrame);
-            for (auto const& x : errorsPos) {
-                std::cout << x << " ";
-            }
-            fst = false;
-        }
-
         // Write the frames and desc to the output files, exits if failed
         if (!fs.write(ogFrame, frame, xorFrame, errorsPosMap, train)) {
             return 1;
@@ -186,7 +163,6 @@ int main()
     std::cout << "Total frames in test data: " << info[4] << std::endl;
     std::cout << "Total frames in training data: " << info[5] << std::endl;
     std::cout << "IPv4 frames longer than 1514 bytes: " << info[6] << std::endl;
-    std::cout << "Frames with real errors: " << info[7] << std::endl;
 
     return 0;
 }
