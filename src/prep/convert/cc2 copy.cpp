@@ -1,5 +1,5 @@
 // Author: Marek Szymański
-// Description: Convert Wireshark capture to binary data files
+// errDescription: Convert Wireshark capture to binary data file
 
 #include "../include/crc32.hpp"
 #include "../include/encoding.hpp"
@@ -8,45 +8,47 @@
 #include "../include/filesaver.hpp"
 
 
+
+const int allToTestRatio = 6;
+
+
 int main()
 {
     // === CONTROLS ===
-    std::string filename = "f1518";                                                        // Filename of the output files
+    std::string filename = "f100";                                                        // Filename of the output files
     int allToTestRatio = 6;                                                             // Ratio of all frames to be assigned to test data
-    int maxFrameSize = 1518;                                                            // Maximum size of the frame we want to process
+    int maxFrameSize = 100;                                                            // Maximum size of the frame we want to process
     bool toXOR = true;                                                                  // Write error vectors to the output file
     bool toErrDesc = true;                                                              // Write error descriptions to the output file
     bool toOg = true;                                                                   // Write original frames to the output file
     std::uint16_t etherType = ETH2_TYPE_IP4;                                            // Ethernet II type of the frames we want to process
     std::string wiresharkFile = "../data/raw/capture1.txt";                         // .txt file with Wireshark capture
-    FileSaver fs("../data/", "capture1.txt", "f1500");
+    FileSaver fs("../data/", "capture1.txt", "f100");
 
     // === variables ===
-    std::string wsline;                                 // single line of text from Wireshark file - i.e. raw, unparsed Ethernet II frame
-    bytesVec frame;                                     // main frame as vector of bytes - uint8_t
-    symbolVec encodedFrame;                             // frame encoded with 8b/10b encoding as vector of 10-bit symbols held in uint16_t
-    bytesVec crcVec;                                    // CRC32 checksum of Ethernet II frame as vector of bytes (4 bytes long)
-    std::uint16_t type;                                 // type of an Ethernet II frame - 2 bytes
-    uint32_t crcTable[256];                             // CRC32 lookup table of 256 4-byte (uint32_t) symbols
-    crc32::generate_table(crcTable);                    // lookup table generation by https://github.com/timepp    
-    std::mt19937 gen;                                   // mt19937 generator that will be used to for pseudo-random generation in error generation functions
-    std::uniform_int_distribution<int> dist(0, allToTestRatio-1);   // uniform distribution used to distribute frames to either Train or Test groups
-    int info[] = {0, 0, 0, 0, 0, 0, 0, 0};              
+    std::string wsline;
+    bytesVec frame;
+    symbolVec encodedFrame;
+    std::uint16_t type;
+    int complement4 = 0;
+    bytesVec crcVec;
+    uint32_t crcTable[256];
+    crc32::generate_table(crcTable);
+    int info[] = {0, 0, 0, 0, 0, 0, 0, 0};
     /*
     Info table meaning:
         0 - Total frames read from raw data file.
-        1 - Total frames of 'etherType' read from raw data file.
+        1 - Total IPv4 frames read from raw data file.
         2 - Total encoding fails.
         3 - Total frames properly encoded and written to output files.
         4 - Total frames assigned to training data.
         5 - Total frames assigned to testing data.
-        6 - 'etherType' type frames longer than 'maxFrameSize' bytes
+        6 - IPv4 frames longer than given bytes
         7 - Undefined
     */
     std::vector<double> errors = {1.0, 0.1};
     std::mt19937 gen;
     std::uniform_int_distribution<int> dist(0, allToTestRatio-1);
-    bool fst = true;
 
     // Open the source file and output files
     if (!fs.openFiles())
@@ -64,7 +66,7 @@ int main()
         // Remove the first 6 characters - in Wireshark format they are always "|0   " before the actuall frame
         wsline.erase(0, 6);
 
-        // Parse the new frame
+        // Parse a new frame
         frame = parseFrame(wsline);
         info[0]++;
 
@@ -153,15 +155,7 @@ int main()
                 break;
             }
         }
-        if (!erred && fst) {
-            printBytesVec(frame);
-            printBytesVec(ogFrame);
-            printBytesVec(xorFrame);
-            for (auto const& x : errorsPos) {
-                std::cout << x << " ";
-            }
-            fst = false;
-        }
+        
 
         // Write the frames and desc to the output files, exits if failed
         if (!fs.write(ogFrame, frame, xorFrame, errorsPosMap, train)) {
@@ -174,13 +168,11 @@ int main()
         }
     }
 
-
     fs.closeFiles();
-
 
     std::cout << std::endl << "=== INFO ===" << std::endl;
     std::cout << "Frames read: " << info[0] << std::endl;
-    std::cout << "EtherType frames: " << info[1] << std::endl;
+    std::cout << "IPv4 frames: " << info[1] << std::endl;
     std::cout << "Encoding fails: " << info[2] << std::endl;
     std::cout << "Frames encoded, processed and written: " << info[3] << std::endl;
     std::cout << "Total frames in test data: " << info[4] << std::endl;
